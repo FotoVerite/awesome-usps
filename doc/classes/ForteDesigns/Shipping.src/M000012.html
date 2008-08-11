@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+<head>
+  <title>parse_world (ForteDesigns::Shipping)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <link rel="stylesheet" href="../../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File lib/forte_designs/shipping.rb, line 173</span>
+    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">parse_world</span>(<span class="ruby-identifier">xml</span>)
+      <span class="ruby-identifier">international_rate_hash</span> = <span class="ruby-constant">Hash</span>.<span class="ruby-identifier">new</span>
+      <span class="ruby-identifier">i</span>= <span class="ruby-value">0</span>
+      <span class="ruby-constant">Hpricot</span>.<span class="ruby-identifier">parse</span>(<span class="ruby-identifier">xml</span>).<span class="ruby-identifier">search</span>(<span class="ruby-value str">'package'</span>).<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">package</span><span class="ruby-operator">|</span>
+        <span class="ruby-identifier">i</span><span class="ruby-operator">+=</span><span class="ruby-value">1</span>
+        <span class="ruby-comment cmt">#This will return the first error description found in response xml.</span>
+        <span class="ruby-comment cmt">#TODO find way to return all errors.</span>
+        <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">package</span>.<span class="ruby-identifier">search</span>(<span class="ruby-value str">&quot;error&quot;</span>) <span class="ruby-operator">!=</span> []
+          <span class="ruby-constant">RAILS_DEFAULT_LOGGER</span>.<span class="ruby-identifier">info</span>(<span class="ruby-node">&quot;package number #{i} has the error #{package.search(&quot;description&quot;).inner_html} please fix before continuing&quot;</span>)
+
+          <span class="ruby-keyword kw">return</span> <span class="ruby-node">&quot;package number #{i} has the error #{package.search(&quot;description&quot;).inner_html} please fix before continuing&quot;</span>
+        <span class="ruby-keyword kw">end</span>
+        <span class="ruby-comment cmt">#Initializing hash for each package. Is there a better way I wonder.</span>
+        <span class="ruby-identifier">international_rate_hash</span>[<span class="ruby-node">&quot;Package#{i}&quot;</span>] = {}
+        <span class="ruby-comment cmt">#Going through each package and finding the rate.</span>
+        <span class="ruby-identifier">package</span>.<span class="ruby-identifier">search</span>(<span class="ruby-value str">&quot;service&quot;</span>).<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">services</span><span class="ruby-operator">|</span>
+          <span class="ruby-identifier">svcdescription</span>=<span class="ruby-identifier">services</span>.<span class="ruby-identifier">search</span>(<span class="ruby-value str">&quot;svcdescription&quot;</span>)
+          <span class="ruby-identifier">rate</span> = <span class="ruby-identifier">services</span>.<span class="ruby-identifier">search</span>(<span class="ruby-value str">&quot;postage&quot;</span>)
+          <span class="ruby-identifier">international_rate_hash</span>[<span class="ruby-node">&quot;Package#{i}&quot;</span>][<span class="ruby-identifier">svcdescription</span>.<span class="ruby-identifier">inner_html</span>] = <span class="ruby-identifier">rate</span>.<span class="ruby-identifier">inner_html</span>
+        <span class="ruby-keyword kw">end</span>
+      <span class="ruby-keyword kw">end</span>
+      <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">international_rate_hash</span> <span class="ruby-operator">==</span> {}
+        <span class="ruby-identifier">international_rate_hash</span> = <span class="ruby-constant">Hpricot</span>.<span class="ruby-identifier">parse</span>(<span class="ruby-identifier">xml</span>).<span class="ruby-identifier">search</span>(<span class="ruby-value str">'description'</span>).<span class="ruby-identifier">inner_html</span>
+      <span class="ruby-keyword kw">end</span>
+      <span class="ruby-keyword kw">return</span> <span class="ruby-identifier">international_rate_hash</span>
+    <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>

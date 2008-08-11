@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+<head>
+  <title>commit (ForteDesigns::Request)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <link rel="stylesheet" href="../../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File lib/forte_designs/request.rb, line 3</span>
+    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">commit</span>(<span class="ruby-identifier">action</span>, <span class="ruby-identifier">request</span>, <span class="ruby-identifier">test</span> = <span class="ruby-keyword kw">false</span>)
+      <span class="ruby-identifier">http</span> = <span class="ruby-constant">Net</span><span class="ruby-operator">::</span><span class="ruby-constant">HTTP</span>.<span class="ruby-identifier">new</span>((<span class="ruby-identifier">test</span> <span class="ruby-value">? </span><span class="ruby-constant">TEST_DOMAINS</span>[<span class="ruby-constant">USE_SSL</span>[<span class="ruby-identifier">action</span>]] <span class="ruby-operator">:</span> <span class="ruby-constant">LIVE_DOMAIN</span>),
+      (<span class="ruby-constant">USE_SSL</span>[<span class="ruby-identifier">action</span>] <span class="ruby-operator">?</span> <span class="ruby-value">443</span> <span class="ruby-operator">:</span> <span class="ruby-value">80</span> ))
+      <span class="ruby-identifier">http</span>.<span class="ruby-identifier">use_ssl</span> = <span class="ruby-constant">USE_SSL</span>[<span class="ruby-identifier">action</span>]
+      <span class="ruby-identifier">response</span> = <span class="ruby-identifier">http</span>.<span class="ruby-identifier">start</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">http</span><span class="ruby-operator">|</span>
+        <span class="ruby-identifier">http</span>.<span class="ruby-identifier">get</span> <span class="ruby-node">&quot;#{test ? TEST_RESOURCE : LIVE_RESOURCE}?API=#{API_CODES[action]}&amp;XML=#{request}&quot;</span>
+      <span class="ruby-keyword kw">end</span>
+      <span class="ruby-identifier">response</span>.<span class="ruby-identifier">body</span>
+    <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>
