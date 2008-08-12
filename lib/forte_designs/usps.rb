@@ -10,6 +10,7 @@ module ForteDesigns
     end
     include ForteDesigns::Tracking
     include ForteDesigns::Shipping
+    include ForteDesigns::DeliveryConfirmation
     
   end
 end
