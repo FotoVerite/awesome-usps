@@ -23,26 +23,12 @@ module FotoVerite
       commit_address_information_request(:verify_address, request ,false)
     end
 
-    def verify_address_canned_test
-      @locations = [Location.new(:address2 => "6406 Ivy Lane", :city =>"Greenbelt", :state => "MD"), Location.new(:address2=>"8 Wildwood Drive", :city => "Old Lyme",:state => "CT", :zip5 => "06371"   )]
-      @api = "AddressValidateRequest"
-      request = xml_for_address_information_api
-      commit_address_information_request(:verify_address, request ,true)
-    end
-
     def zip_lookup(locations)
       @locations = locations
       @locations = Array(@locations) if not @locations.is_a? Array
       @api = "ZipCodeLookupRequest"
       request = xml_for_address_information_api
       commit_address_information_request(:zip_lookup, request ,false)
-    end
-
-    def zip_lookup_canned_test
-      @locations = [Location.new(:address2 => "6406 Ivy Lane", :city =>"Greenbelt", :state => "MD"), Location.new(:address2=>"8 Wildwood Drive", :city => "Old Lyme",:state => "CT", :zip5 => "06371"   )]
-      @api = "ZipCodeLookupRequest"
-      request = xml_for_address_information_api
-      commit_address_information_request(:zip_lookup, request ,true)
     end
 
     def city_state_lookup(locations)
@@ -53,13 +39,29 @@ module FotoVerite
       commit_address_information_request(:zip_lookup, request ,false)
     end
 
-    def city_state_lookup_canned_test
+
+    def canned_verify_address_test
+      @locations = [Location.new(:address2 => "6406 Ivy Lane", :city =>"Greenbelt", :state => "MD"), Location.new(:address2=>"8 Wildwood Drive", :city => "Old Lyme",:state => "CT", :zip5 => "06371"   )]
+      @api = "AddressValidateRequest"
+      request = xml_for_address_information_api
+      commit_address_information_request(:verify_address, request ,true)
+    end
+
+    def canned_zip_lookup_test
+      @locations = [Location.new(:address2 => "6406 Ivy Lane", :city =>"Greenbelt", :state => "MD"), Location.new(:address2=>"8 Wildwood Drive", :city => "Old Lyme",:state => "CT", :zip5 => "06371"   )]
+      @api = "ZipCodeLookupRequest"
+      request = xml_for_address_information_api
+      commit_address_information_request(:zip_lookup, request ,true)
+    end
+
+    def canned_city_state_lookup_test
       @locations = [Location.new(:address2 => "6406 Ivy Lane", :city =>"Greenbelt", :state => "MD"), Location.new(:address2=>"8 Wildwood Drive", :city => "Old Lyme",:state => "CT", :zip5 => "06371"   )]
       @api = "CityStateLookupRequest"
       request = xml_for_address_information_api
       commit_address_information_request(:zip_lookup, request ,true)
     end
 
+    private
     # XML from  Builder::XmlMarkup.new
     def xml_for_address_information_api
       xm = Builder::XmlMarkup.new
@@ -86,6 +88,7 @@ module FotoVerite
 
     # Parses the XML into an array broken up by each address.
     # For verify_address :verified will be false if multiple address were found.
+
     def parse_address_information(xml)
       i = 0
       list_of_verified_addresses = []
@@ -115,7 +118,7 @@ module FotoVerite
     end
 
 
-    private
+
     def commit_address_information_request(action, request, test = false)
       retries = MAX_RETRIES
       begin

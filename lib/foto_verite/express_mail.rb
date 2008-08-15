@@ -6,8 +6,8 @@ module FotoVerite
     LIVE_DOMAIN = 'secure.shippingapis.com'
     LIVE_RESOURCE = '/ShippingAPI.dll'
 
-    API_CODES = {:live =>'ExpressMailLabel',
-    :test => "ExpressMailLabelCertify"}
+    API_CODES = {:express_mail_label =>'ExpressMailLabel',
+    :express_mail_label_certify => "ExpressMailLabelCertify"}
 
     def express_mail(orgin, destination, ounces, image_type, options={})
       @orgin =orgin
@@ -17,7 +17,7 @@ module FotoVerite
       @api = "ExpressMailLabelRequest"
       request = express_mail_xml
       #YES THE API IS SO STUPID THAT WE MUST PASS WHAT TYPE OF MIME TYPE!
-      commit_express_mail_xml(:live, request, image_type, false)
+      commit_express_mail_xml(:express_mail_label, request, image_type, false)
     end
 
     def express_mail_canned_test
@@ -28,10 +28,10 @@ module FotoVerite
       @options = {}
       @api = "ExpressMailLabelCertifyRequest"
       request = express_mail_xml
-      commit_express_mail_xml(:test, request, @image_type, true)
+      commit_express_mail_xml(:express_mail_label_certify, request, @image_type, true)
     end
 
-
+    private
     def express_mail_xml
       xm = Builder::XmlMarkup.new
       xm.tag!("#{@api}", "USERID"=>"#{@username}") do
@@ -96,8 +96,6 @@ module FotoVerite
       end
     end
 
-
-    private
     def commit_express_mail_xml(action, request, image_type, test=false)
       retries = MAX_RETRIES
       begin

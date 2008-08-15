@@ -25,7 +25,7 @@ module FotoVerite
       commit_merch_return_xml(:live, request, image_type, false)
     end
 
-    def merch_return_canned_test
+    def canned_merch_return_test
       @service_type ="Priority"
       @customer = Location.new( :name=> "Craig Ingle",  :address2 => "6406 Ivy Lane",  :state => 'MD', :city => 'Greenbelt', :zip5 => '20770')
       @retailer =Location.new( :name=> "XYZ Corp.",  :address2 =>"1100 West Avenue")
@@ -40,7 +40,7 @@ module FotoVerite
       commit_merch_return_xml(:test, request, @image_type, true)
     end
 
-
+    private
     def merch_return_xml
       xm = Builder::XmlMarkup.new
       xm.tag!("#{@api}", "USERID"=>"#{@username}") do
@@ -98,7 +98,7 @@ module FotoVerite
     end
 
 
-    private
+  
     def commit_merch_return_xml(action, request, image_type, test=false)
       retries = MAX_RETRIES
       begin

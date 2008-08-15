@@ -2,7 +2,7 @@ module FotoVerite #:nodoc:
   class Location
 
     attr_reader :options,
-    #:country,
+    :country,
     :name,
     :last_name,
     :firm_name,
@@ -12,9 +12,10 @@ module FotoVerite #:nodoc:
     :city,
     :address1,
     :address2,
-    :phone
-    :facility_type
-    #:phone,
+    :address3,
+    :phone,
+    :facility_type,
+    :from_urbanization
     #:fax,
     #:address_type
 
@@ -23,11 +24,10 @@ module FotoVerite #:nodoc:
     alias_method :province, :state
     alias_method :territory, :province
     alias_method :region, :province
+    alias_method :first_name, :name
 
     def initialize(options = {})
-      #@country = (options[:country].nil? or options[:country].is_a?(ActiveMerchant::Country)) ?
-      #options[:country] :
-      #ActiveMerchant::Country.find(options[:country])
+      @country = options[:country]
       @name = options[:name] || options[:first_name]
       @last_name= options[:last_name]
       @firm_name = options[:firm_name]
@@ -37,8 +37,10 @@ module FotoVerite #:nodoc:
       @city = options[:city]
       @address1 = options[:address1]
       @address2 = options[:address2]
+      @address3=options [:address3]
       @phone = options[:phone]
       @facility_type = options[:facility_type]
+      @from_urbanization =options[:from_urbanization]
     end
 
     def self.from(object, options={})

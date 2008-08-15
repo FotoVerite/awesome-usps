@@ -15,14 +15,14 @@ module FotoVerite
     }
 
     # Takes your package tracking number and returns information for the USPS web API
-    def priority_mail(origin, destination)
+    def priority_mail_estimated_time(origin, destination)
       @origin = orgin
       @destination=destination
       request = xml_for_estimated_time_for_delivery("PriorityMailRequest")
       commit_service_standard_request(:priority_mail, request ,false)
     end
 
-    def standard_mail(origin, destination)
+    def standard_mail_estimated_time(origin, destination)
       @origin = orgin
       @destination=destination
       request = xml_for_estimated_time_for_delivery("StandardBRequest")
@@ -37,21 +37,21 @@ module FotoVerite
       commit_service_standard_request(:express, request ,false)
     end
 
-    def canned_standard_mail
+    def canned_standard_mail_estimated_time_test
       @origin =  Location.new(  :zip5 => '4')
       @destination = Location.new( :zip5 => '4')
       request = xml_for_estimated_time_for_delivery("PriorityMailRequest")
       commit_service_standard_request(:priority_mail, request ,true)
     end
 
-    def canned_priority_mail
+    def canned_priority_mail_estimated_time_test
       @origin =  Location.new(  :zip5 => '4')
       @destination = Location.new( :zip5 => '4')
       request = xml_for_estimated_time_for_delivery("PriorityMailRequest")
       commit_service_standard_request(:standard, request ,true)
     end
 
-    def canned_express_mail_commitment
+    def canned_express_mail_commitment_test
       @origin= Location.new(  :zip5 =>'20770')
       @destination=Location.new( :zip5 =>'11210')
       @date = '05-Aug-2004'

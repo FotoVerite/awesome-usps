@@ -10,12 +10,13 @@ module FotoVerite
     end
     include FotoVerite::Tracking
     include FotoVerite::Shipping
-    include FotoVerite::DeliveryConfirmation
+    include FotoVerite::DeliveryAndSignatureConfirmation
     include FotoVerite::ServiceStandard
     include FotoVerite::OpenDistrubutePriority
     include FotoVerite::ElectricMerchandisReturn
     include FotoVerite::ExpressMail
     include FotoVerite::AddressVerification
-    
+    include FotoVerite::InternationalMailLabels
+
   end
 end

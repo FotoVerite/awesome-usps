@@ -91,7 +91,8 @@ module FotoVerite
       request = xml_for_world
       tracking_commit(:world_rates, request ,false)
     end
-
+    
+    private
     # XML built with Build:XmlMarkup
     def xml_for_us
       xm = Builder::XmlMarkup.new
@@ -166,10 +167,7 @@ module FotoVerite
       end
       return domestic_rate_hash
     end
-
-    # Returns the sent xml as a hash orgainzied by each package and service type.
-    # example
-    # {Package1 => {'Globle Express Mail' => "36.90"}Package2 => {'Globle Express Mail' => "26.90" }
+    
     def parse_world(xml)
       international_rate_hash = Hash.new
       i= 0
@@ -197,7 +195,6 @@ module FotoVerite
       return international_rate_hash
     end
 
-    private
     def tracking_commit(action, request, test = false)
       retries = MAX_RETRIES
       begin

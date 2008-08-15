@@ -6,13 +6,11 @@ module  FotoVerite
     LIVE_DOMAIN = 'secure.shippingapis.com'
     LIVE_RESOURCE = '/ShippingAPI.dll'
 
-    TEST_DOMAIN =  'secure.shippingapis.com'
 
-    TEST_RESOURCE = '/ShippingAPITest.dll'
+    API_CODES = {:open_distrubute_priority => "OpenDistributePriority",
+    :open_distribute_priority_certify => "OpenDistributePriorityCertify"}
 
-    API_CODES = {:open_distrubute_priority => "OpenDistributePriority"}
-
-    def open_distrubute_priority(orgin, destination, package_weight_in_ounces, permit_number, issued_by, mail_type, image_type, label_type=1, options={})
+    def open_distrubute_priority_label(orgin, destination, package_weight_in_ounces, permit_number, issued_by, mail_type, image_type, label_type=1, options={})
       @package_weight_in_ounces = package_weight_in_ounces
       @origin = origin
       @destination = destination
@@ -21,12 +19,13 @@ module  FotoVerite
       @mail_type = mail_type
       @image_type = image_type
       @options =options
+      @api = "OpenDistributePriorityRequest"
       request = open_distrubute_priority_xml
       #YES THE API IS THAT STUPID THAT WE MUST PASS WHAT TYPE OF MIME TYPE!
       commit_open_distrubute_priority_xml(:open_distrubute_priority, request, image_type, false)
     end
 
-    def open_distrubute_priority_canned_test_1
+    def canned_open_distrubute_priority_label_test
       @origin = Location.new( :name=> "John Smith",  :address2 => "6406 Ivy Lane",  :state => 'MD', :city => 'Greenbelt', :zip5 => '20770')
       @destination =Location.new( :name=> "Fairfax Post Office",  :address2 =>"10660 Page Ave",  :state => 'VA', :city => 'Fairfax', :zip5 => "22030", :facility_type => "DDU")
       @permit_number = "1"
@@ -35,14 +34,15 @@ module  FotoVerite
       @image_type = "PDF"
       @package_weight_in_ounces = 1
       @options = {:address_service => true}
+      @api = "OpenDistributePriorityCertifyRequest"
       request= open_distrubute_priority_xml
-      commit_open_distrubute_priority_xml(:open_distrubute_priority, request, @image_type, false)
+      commit_open_distrubute_priority_xml(:open_distribute_priority_certify, request, @image_type, true)
     end
 
-
+    private
     def open_distrubute_priority_xml
       xm = Builder::XmlMarkup.new
-      xm.tag!("OpenDistributePriorityRequest", "USERID"=>"#{@username}") do
+      xm.tag!("#{@api}", "USERID"=>"#{@username}") do
         xm.PermitNumber(@permit_number)
         xm.PermitIssuingPOZip5(@issued_by)
         xm.FromName(@origin.name)
@@ -90,13 +90,11 @@ module  FotoVerite
       end
     end
 
-
-    private
     def commit_open_distrubute_priority_xml(action, request, image_type, test=false)
       retries = MAX_RETRIES
       begin
         #If and when their testing resource works again this will be useful tertiary command
-        url = URI.parse(test ?  "https://#{LIVE_DOMAIN}#{TEST_RESOURCE}" : "https://#{LIVE_DOMAIN}#{LIVE_RESOURCE}")
+        url = URI.parse("https://#{LIVE_DOMAIN}#{LIVE_RESOURCE}")
         req = Net::HTTP::Post.new(url.path)
         req.set_form_data({'API' => API_CODES[action], 'XML' => request})
         response = Net::HTTP.new(url.host, 443)

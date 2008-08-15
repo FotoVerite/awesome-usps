@@ -1,19 +1,17 @@
 module  FotoVerite
-  module DeliveryConfirmation
+  module DeliveryAndSignatureConfirmation
 
     MAX_RETRIES = 3
 
     LIVE_DOMAIN = 'secure.shippingapis.com'
     LIVE_RESOURCE = '/ShippingAPI.dll'
 
-    TEST_DOMAIN =  'secure.shippingapis.com'
-
-    TEST_RESOURCE = '/ShippingAPITest.dll'
-
     API_CODES = {:delivery =>'DeliveryConfirmationV3',
-    :signature => "SignatureConfirmationV3"}
+      :delivery_confirmation_certify => "DelivConfirmCertifyV3",
+      :signature => "SignatureConfirmationV3",
+    :signature_confirmation_certify => "SignatureConfirmCertifyV3"}
 
-    def delivery_confirmation(origin, destination, service_type, image_type, label_type=1, options={})
+    def delivery_confirmation_label(origin, destination, service_type, image_type, label_type=1, options={})
       @origin = origin
       @destination = destination
       @service_type = service_type
@@ -21,24 +19,12 @@ module  FotoVerite
       @label_type = label_type
       @options = options
       @api = "DeliveryConfirmationV3.0Request"
-      request = delivery_xml
+      request = confirmation_xml
       #YES THE API IS THAT STUPID THAT WE MUST PASS WHAT TYPE OF MIME TYPE!
-      commit_delivery_xml(:delivery, request, image_type, false)
+      commit_confirmation_xml(:delivery, request, image_type, false)
     end
 
-    def delivery_canned_test_1
-      @origin = Location.new( :name=> "John Smith",  :address2 => "6406 Ivy Lane",  :state => 'MD', :city => 'Greenbelt', :zip5 => '20770')
-      @destination =Location.new( :name=> "Joe Customer",  :address2 =>"136 Linwood Plz",  :state => 'NJ', :city => 'Fort Lee', :zip5 => "07024")
-      @service_type = "Priority"
-      @image_type ="PDF"
-      @label_type = 1
-      @options = {:weight => 2}
-      @api = "DeliveryConfirmationV3.0Request"
-      request = delivery_xml
-      commit_delivery_xml(:delivery, request, @image_type, false)
-    end
-
-    def signature_confirmation(origin, destination, service_type, image_type, label_type=1, options={})
+    def signature_confirmation_label(origin, destination, service_type, image_type, label_type=1, options={})
       @origin = origin
       @destination = destination
       @service_type = service_type
@@ -46,25 +32,41 @@ module  FotoVerite
       @label_type = label_type
       @options = options
       @api = "SignatureConfirmationV3.0Request"
-      request = delivery_xml
+      request = confirmation_xml
       #YES THE API IS THAT STUPID THAT WE MUST PASS WHAT TYPE OF MIME TYPE!
-      commit_delivery_xml(:signature, request, image_type, false)
+      commit_confirmation_xml(:signature, request, image_type, false)
     end
 
-    def signature_canned_test_1
+    protected
+
+    def canned_delivery_confirmation_label_test
       @origin = Location.new( :name=> "John Smith",  :address2 => "6406 Ivy Lane",  :state => 'MD', :city => 'Greenbelt', :zip5 => '20770')
       @destination =Location.new( :name=> "Joe Customer",  :address2 =>"136 Linwood Plz",  :state => 'NJ', :city => 'Fort Lee', :zip5 => "07024")
       @service_type = "Priority"
       @image_type ="PDF"
       @label_type = 1
       @options = {:weight => 2}
-      @api = "SignatureConfirmationV3.0Request"
-      request = delivery_xml
-      commit_delivery_xml(:signature, request, @image_type, false)
+      @api = "DelivConfirmCertifyV3.0Request"
+      request = confirmation_xml
+      commit_confirmation_xml(:delivery_confirmation_certify, request, @image_type, true)
     end
 
 
-    def delivery_xml
+
+    def canned_signature_confirmation_label_test
+      @origin = Location.new( :name=> "John Smith",  :address2 => "6406 Ivy Lane",  :state => 'MD', :city => 'Greenbelt', :zip5 => '20770')
+      @destination =Location.new( :name=> "Joe Customer",  :address2 =>"136 Linwood Plz",  :state => 'NJ', :city => 'Fort Lee', :zip5 => "07024")
+      @service_type = "Priority"
+      @image_type ="PDF"
+      @label_type = 1
+      @options = {:weight => 2}
+      @api = "SignatureConfirmCertifyV3.0Request"
+      request = confirmation_xml
+      commit_confirmation_xml(:signature_confirmation_certify, request, @image_type, true)
+    end
+
+    private
+    def confirmation_xml
       xm = Builder::XmlMarkup.new
       xm.tag!(@api, "USERID"=>"#{@username}") do
         xm.Option(@label_type)
@@ -99,7 +101,7 @@ module  FotoVerite
       end
     end
 
-    def parse_delivery_label(xml, image_type)
+    def parse_confirmation_label(xml, image_type)
       if image_type == "TIF"
         image_type = "image/tif"
       else
@@ -117,12 +119,11 @@ module  FotoVerite
     end
 
 
-    private
-    def commit_delivery_xml(action, request, image_type, test=false)
+    def commit_confirmation_xml(action, request, image_type, test=false)
       retries = MAX_RETRIES
       begin
         #If and when their testing resource works again this will be useful tertiary command
-        url = URI.parse(test ?  "https://#{LIVE_DOMAIN}#{TEST_RESOURCE}" : "https://#{LIVE_DOMAIN}#{LIVE_RESOURCE}")
+        url = URI.parse("https://#{LIVE_DOMAIN}#{LIVE_RESOURCE}")
         req = Net::HTTP::Post.new(url.path)
         req.set_form_data({'API' => API_CODES[action], 'XML' => request})
         response = Net::HTTP.new(url.host, 443)
@@ -148,7 +149,7 @@ module  FotoVerite
       response = response.request(req)
       case response
       when Net::HTTPSuccess
-        parse_delivery_label(response.body, image_type)
+        parse_confirmation_label(response.body, image_type)
       else
         RAILS_DEFAULT_LOGGER.warn("USPS plugin settings are wrong #{response}")
         return "USPS plugin settings are wrong #{response}"
