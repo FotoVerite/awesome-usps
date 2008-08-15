@@ -245,7 +245,7 @@ module  FotoVerite
         xm.Comments(@options[:comments])
         xm.ImageType(@image_type)
         xm.ImageLayout(@image_layout)
-        xm.LabelDate(@options[:date])
+        xm.LabelDate(@options[:label_date])
         xm.HoldForManifest(@options[:hold])
       end
     end

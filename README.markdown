@@ -290,6 +290,7 @@ Object Methods are as follow
 	#po_box_flag  can be set to "Y" if items are being sent to a PO-Box
 	
 	Option Hash for priority and express can contain
+	
 	 * :middle_initial => "middle initial of sender"
 	 * :from_customs_reference
 	 * :to_customs_reference
@@ -311,7 +312,28 @@ Object Methods are as follow
 	 * :po_zip_code
 	 * :label_date  => Can be set up to four days in the future
 	 * :hold => "Hold for manifest"
-
+	
+	Option Hash for first_class can contain
+	
+	 * :middle_initial => "middle initial of sender"
+	 * :from_customs_reference
+	 * :to_customs_reference
+	 * :fax => "fax of receiver"
+	 * :email => "email of receiver"
+	 * :first_class_mail_type
+	 * :machinable => "True or False"
+	 * :other
+	 * :comments
+	 * :label_date  => Can be set up to four days in the future
+	 * :hold => "Hold for manifest"
+	
+	#Output hash contains postage cost, total value of all items, SDRValue and the Bar code number.
+	#Can be access :postage, :totalvalue, :sdrvalue, and :barcodenumber respectively. 
+	
+	<Postage>96.25</Postage>
+	            <TotalValue>16.65</TotalValue>
+	            <SDRValue>11.42</SDRValue>
+	            <BarcodeNumber>LJ000100644US</BarcodeNumber>
 ## Open Distribute Priority Label Creation
 	#TODO a good description for what Open Distribute Priority actually means
 	
