@@ -36,21 +36,57 @@ Gem and tarball forthcoming on rubyforge.
 [Git]:http://git.or.cz/
 [git-archive]:http://www.kernel.org/pub/software/scm/git/docs/git-archive.html
 
-## Notice about using the USPS API
+## Notice about using the USPS APIs
  USPS can be a bit frustrating when starting working with them. First you must apply for a USPS web tools account
 [USPS Web Tools]:https://secure.shippingapis.com/registration/
 
 This will net you a USPS user name assigned by them and a password. The password is for older versions of their api so you do not need to concern yourself with it. 
 
-Secondly you only have accesses to the Testing Server. You should run the canned response to make sure everything is setup up correctly. 
+Secondly you only have accesses to the Testing Server. You should run one of the canned response to make sure everything is setup up correctly. 
 	
 	usps.canned_tracking
 
 You should receive an array as a response. 
 
-From there you need to email USPS for your account to be changed over to production so you can send live data. 
+From there you need to email USPS for your account to be changed over to production so you can send live data. This does not hold true for all their Api some of which require and additional level of clearance. See Below
 
-	#TODO Explain what must be done for Labels API
+## Notice on USPS Label APIs
+
+ USPS is kinda... bad with how they handle their various label creation APIs. Except for their Priority Mail® Open and Distribute API you must make an additional email or call to their customer care center to have your permission turned on to send live data to the server. It is even more complicated if you wish to create your own labels with your company logo from their response xml. See their API documentation located at
+[http://www.http://www.usps.com/webtools/htm/Delivery-Confirmation.htm]:http://www.usps.com/webtools/htm/Delivery-Confirmation.htm for details on the procedure.
+
+## Notice on Address Information APIs
+These APIs; Specifically Address Verify, Zip Lookup, and City State Lookup also need separate permission for use of live data. 
+
+## Canned Tests
+Because most of the API's require an additional level of permission to use with live data every method has a canned test. They are both useful for integrating the returned data with your system and for testing that the library has not been compromised. A canned method follow this format. canned\_method\_name\_test. 
+ 
+## Awesome USPS methods
+
+API methods are as follow
+
+* track
+* veryify_address
+* zip_lookup
+* city\_state\_lookup
+* delivery\_confirmation\_label
+* signature\_confirmation\_label
+* merch_return
+* express_mail
+* express\_mail\_international\_label
+* priority\_mail\_international\_label
+* first\_class\_international\_label
+* open\_distrubute\_priority\_label
+* priority\_mail\_estimated\_time
+* standard\_mail\_estimated\_time
+* domestic_rates
+* world_rates
+
+Object Methods are as follow
+
+* Package.new
+* Location.new
+* International Location #Only used in conjunction with international labels API
 
 ## Sample Usage
 	#In your environment.rb or production.rb
@@ -77,7 +113,7 @@ From there you need to email USPS for your account to be changed over to product
   
 #To track a package
 
-	USPS.track("Number")
+	USPS.track("Tracking Number")
 	
 	#This will return an array of tracking events example shown below
 	
@@ -111,35 +147,34 @@ From there you need to email USPS for your account to be changed over to product
 	USPS.domestic_rates(ZIP, Packages, options={})
 	USPS.world_rates(Country, Packages, options={})
 	
-	#Both will return a hash organized by Package and service
-	
-	{"Package1"=>{"Priority Mail International Flat-Rate Box"=>"38.95", "USPS GXG Envelopes"=>"97.00",
-	 "Priority Mail International Large Flat-Rate
-	 Box"=>"49.95", "Priority Mail International"=>"48.00", "Express Mail International (EMS) Flat-Rate
-	 Envelope"=>"25.95", "Express Mail International
-	 (EMS)"=>"55.50", "Global Express Guaranteed Non-Document Non-Rectangular"=>"97.00", "Global Express Guaranteed
-	 Non-Document Rectangular"=>"97.00",
-	 "Global Express Guaranteed"=>"97.00"}, "Package2"=>{"Priority Mail International Flat-Rate Box"=>"38.95",
-	 "USPS GXG Envelopes"=>"148.00", 
-	 "Priority Mail International Large Flat-Rate Box"=>"49.95", "Priority Mail International"=>"81.75", 
-	 "Express Mail International (EMS) Flat-Rate
-	  Envelope"=>"25.95", "Express Mail International (EMS)"=>"100.50", 
-	 "Global Express Guaranteed Non-Document Non-Rectangular"=>"148.00",
-	 "Global Express Guaranteed Non-Document Rectangular"=>"148.00", "Global Express Guaranteed"=>"148.00"}}
+	#Both will return and array containg a hash of rates for each package.
 	
 	#To access a rate hash for use you can do 
 	
 	hash = 	USPS.world_rates(Country, Packages, options={})
-	hash[Package1][Priority Mail International]
+	hash[0][Priority Mail International]
 	
 	#You can also loop through and sort
 
+#Address Verification
+
+	#All methods here will take a location array of up to five address
+	
+	#To verify an address and fill in missing information. If mulitple addresses were found for an address :verified => false
+    usps.veryify_address("locations array")
+	
+	#Will fill in missing zip5 and zip4 for an address
+	usps.zipcode_lookup("location array")
+	
+	#Will fill in missing City and State for an address
+	usps.city_state_lookup
+
+
+#
 ## TODO
 
-* proper documentation
+* Better documentation
 * package into a gem
-* carrier code template generator
-* label printing
 * Add tests with RSPEC
 
 ## Contributing
