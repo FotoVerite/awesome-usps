@@ -88,7 +88,7 @@ Object Methods are as follow
 * Location.new
 * International Location #Only used in conjunction with international labels API
 
-## Sample Usage
+# Sample Usage
 	#In your environment.rb or production.rb
 	
     require 'active_shipping'
@@ -109,9 +109,36 @@ Object Methods are as follow
                     [15, 10, 4.5],              # 15x10x4.5 inches
                     :units => :imperial)        # not grams, not centimetres
     ]
+	
+	#Create a location to use with the Api
+	 sender =Location.new(:name => "Matthew Bergman ",:first_name => "Matthew", :last_name => "Bergman",
+	:address1 => Apt 4m, :address2 => "1001 Pine Street", 
+	:city => "New York", :state => "NY", :zip5 => "100010", :phone => "5555555555")
+	
+	#International Item Class
+	#Only should be used in conjunction with the Internal Label Api 
+	Items = [
+		InternationalItem.new( 
+		:description => Pens", 
+		:quantity => "50" 
+		:value => 200.40,     					#Will be converted back to a float if entered as a string. 
+	    :ounces => "50",							
+	    :tariff_number => "Only use if known"	#Optional input for the api. 
+	    :country => "United States")
+	
+		InternationalItem.new( 
+		:description => "Against The Day, Pynchon",
+	    :quantity => "10"
+	    :value => 100.25
+	    :ounces => "250"
+	    :country => "United States")
+	]
+	
+### Note for working with Location Class
+		#The api is very quirky about how it handles addresses. :address1 is for inputing Apt or Suite numbers and nothing else. 
+		#Besides the obvious info, it can contain, :facility_type and :from_urbanization, which are used for specific Apis.
   
-  
-#To track a package
+##To track a package
 
 	USPS.track("Tracking Number")
 	
@@ -128,21 +155,9 @@ Object Methods are as follow
 	
 	#Loop through and display as you wish
 	
-#To get rates for a single or group of packages. 
-
-	# Package up a poster and a Wii for your nephew.
-	# Note the Package Module has been taken directly from Active Shipping. Thank you James MacAulay for developing such great code. 
-	packages = [
-  	  Package.new(  100,                        # 100 grams
-                    [93,10],                    # 93 cm long, 10 cm diameter
-                	:cylinder => true),         # cylinders have different volume calculations
-
-  	  Package.new(  (7.5 * 16),                 # 7.5 lbs, times 16 oz/lb.
-                	[15, 10, 4.5],              # 15x10x4.5 inches
-                	:units => :imperial)        # not grams, not centimetres
-	  ]
+##To get rates for a single or group of packages. 
 	
- 	#Then user either the domestic rates or world rates method
+ 	#There are two APIs. One for domestic, the other for international packages. 
 
 	USPS.domestic_rates(ZIP, Packages, options={})
 	USPS.world_rates(Country, Packages, options={})
@@ -151,12 +166,12 @@ Object Methods are as follow
 	
 	#To access a rate hash for use you can do 
 	
-	hash = 	USPS.world_rates(Country, Packages, options={})
-	hash[0][Priority Mail International]
+	array = USPS.world_rates(Country, Packages, options={})
+	array[0][Priority Mail International]
 	
 	#You can also loop through and sort
 
-#Address Verification
+##Address Verification
 
 	#All methods here will take a location array of up to five address
 	
@@ -168,12 +183,162 @@ Object Methods are as follow
 	
 	#Will fill in missing City and State for an address
 	usps.city_state_lookup
+	
+##Service Standards
 
+	usps.priority_mail_estimated_time(origin, destination)
+	usps.standard_mail_estimated_time(origin, destination)
+	
+	#Both of these methods returns a number for the amount of days a package will take to reach 
+	#its destination. 
+## Express Mail Commitment
 
-#
+	usps.express_mail_commitment(origin, destination, date=nil)
+	
+	#returns a array of hashs containing commitment information. Example shown below
+	
+	[{:state=>"MD", :cutoff=>"6:00 PM", :facility=>"EXPRESS MAIL COLLECTION BOX", :zip=>"20770", 
+	:street=>"119 CENTER WAY", :city=>"GREENBELT"}, {:state=>"MD", :cutoff=>"3:00 PM", 
+	:facility=>"EXPRESS MAIL COLLECTION BOX", :zip=>"20770", :street=>"7500 GREENWAY CENTER DRIVE", 
+	:city=>"GREENBELT"}]	
+
+#Label APIs
+	#All label API's generate a label image  encoded via 64bit encryption. It must be decrypted by using  
+	#Base64.decode64(Image_file) to display correctly. The only choices for image_type right now are pdf and TIFF
+	
+	#An easy way to test and intergrate is to set up something along these lines in a controller. 
+	
+	def deliver_confirmation
+    	image = USPS.new("XXXXXX").canned\_delivery\_confirmation\_label_test
+    	send_data Base64.decode64(image[:label]), :type => image[:image_type], :disposition => "inline"
+  	end
+	
+	#All labels except for international labels take a straight name for their XML. 
+	#When using International label APIs you must include both a first and last name
+ 
+
+## Delivery and Signature Label Creation
+	usps.delivery_confirmation_label(origin, destination, service_type, image_type, label_type=1, options={})
+	usps.signature_confirmation_label(origin, destination, service_type, image_type, label_type=1, options={}) 
+	
+	#label_type can be set to 2 if you desire to create your own labels. No label will be generated for you,
+	#you simply will receive a 	confirmation label to use with the image you create. 
+	
+	#Option hash can contain
+	
+	* :weight_in_ounces 
+	* :seperate => puts the label directions on a seperate page. 
+	* :po_zip_code => Post Offic zip code
+	* :label_date => Can be set up to four days in the future
+	* :customer_reference_number
+	* :address_service => ill be notified in the future if address has been changed
+	* :sender_name, :sender_email, 
+	  :recipient_name, :recipient_email  => Used together to send an email to the recipient. 
+	 
+## Electronic Merchandise Return Label Creation
+	usps.merch_return(service_type, customer, retailer, permit_number, 
+					  post_office, postage_delivery_unit,  ounces, image_type, options={})
+					
+	#permit_number => Input permit number provided by your local post office.
+	#post_office => Location class of post office that issued the permit. Address not needed
+	#postage_delivery_unit => Location class for delivery unit you are sending the package to.
+	
+	#Option hash can contain
+	
+	 * :confirmation => "Includes delivery confirmation with the label. To enable set to true" 
+	 * :insurance_value 
+	 * :rma => "Return Materials Authorization Number"
+	 * :RMABarcode => "Will Render Barcode on Label if set to true and a RMA has been entered"
+	 * :sender_name, :sender_email, 
+	   :recipient_name, :recipient_email  => Used together to send an email to the recipient. 
+	
+	#Output hash contains postnet number and the cost for sending. Under :postnet and :cost respectively. 
+
+## Express Mail Label Creation
+	usps.express_mail_label(orgin, destination, ounces, image_type, options={})
+	
+	#Option hash can contain
+	
+	 * :flat_rate => "Can be set to true if using flat rate envelopes"
+	 * :standardize_address => "Verify Address"
+	 * :waiver_signature => "No Signature Required for Delivery"
+	 * :no_holiday => "Do not deliver on a holiday"
+	 * :no_weekend
+	 * :seperate => puts the label directions on a seperate page
+	 * :po_zip_code
+	 * :label_date  => Can be set up to four days in the future
+	 * :sender_name, :sender_email, 
+	   :recipient_name, :recipient_email  => Used together to send an email to the recipient. 
+	
+	#Output hash contains postage cost for sending. Can be accessed by :postage
+	
+## International Mail Labels Creation
+	usps.express_mail_international_label(sender, receiver, items, image_type, po_box_flag ="N",
+  	image_layout="ALLINONEFILE", label_type="1", options={})
+
+	usps.priority_mail_international_label(sender, receiver, items, image_type, po_box_flag ="N",
+  	image_layout="ALLINONEFILE", label_type="1", options={})
+
+	usps.first_class_international_label(sender, receiver, items, image_type, po_box_flag ="N",
+  	image_layout="ALLINONEFILE", label_type="1", options={})
+	
+	#label_type can be set to 2 if you desire to create your own labels. No label will be generated for you,
+	#items => InternationalItem.new can be an array of objects or singular
+	#content_type => Options are "MERCHANDISE", "SAMPLE", "GIFT", "DOCUMENTS", "RETURN", "OTHER"
+	#If OTHER is selected content type must be described by :other => "Description" in the option hash.
+	#image_layout => "Allows for a few options"
+	#po_box_flag  can be set to "Y" if items are being sent to a PO-Box
+	
+	Option Hash for priority and express can contain
+	 * :middle_initial => "middle initial of sender"
+	 * :from_customs_reference
+	 * :to_customs_reference
+	 * :fax => "fax of receiver"
+	 * :email => "email of receiver"
+	 * :non_delivery_option => "Return, Reject, Abaddon. Defaults to abaddon."
+	 * :alt_return_address1 => "used to explain where package goes 
+		if delivery_option set to . Goes up to alt_return_address6"
+	 * :alt_return_country
+	 * :container => "VARIABLE or FLATRATEENV"
+	 * :insurance_number
+	 * :Postage => "If postage is already known. Will be caculated if left blank. "
+	 * :other
+	 * :comments
+	 * :license_number
+	 * :certificate_number
+	 * :invoice_number
+	 * :reference_number
+	 * :po_zip_code
+	 * :label_date  => Can be set up to four days in the future
+	 * :hold => "Hold for manifest"
+
+## Open Distribute Priority Label Creation
+	#TODO a good description for what Open Distribute Priority actually means
+	
+	usps.open_distrubute_priority_label(orgin, destination, 
+		 package_weight_in_ounces, mail_type, image_type, label_type=1, options={})
+		
+	#label_type can be set to 2 if you desire to create your own labels. No label will be generated for you,
+	#you simply will receive a 	confirmation label to use with the image you create.
+	
+	#destination class must contain :facility_type, See API Document for explination of the different types
+	
+	#mail_type can be be, "Letters", "Flats", "Parcels", "Mixed" or "Other" 
+	#If other is chosen it must be described in the option hash via :other => "Description"
+
+	#Option has can contain
+	
+	 * :permit_number => "Issued by Post Office"
+	 * :permit_zip => "Zip of Post Office that issued permit. Must be included if using :permit_number"
+	 * :po_zip_code
+	 * :other
+	 * :no_weekend
+	 * :seperate => puts the label directions on a seperate page
+	 * :label_date  => Can be set up to four days in the future
+		
 ## TODO
 
-* Better documentation
+* Proofread documentation
 * package into a gem
 * Add tests with RSPEC
 

@@ -9,12 +9,12 @@ module FotoVerite
     API_CODES = {:live =>'MerchandiseReturnV3',
     :test => "MerchReturnCertifyV3"}
 
-    def merch_return(service_type, customer, retailer, permit_number, post_offcice, postage_delivery_unit,  ounces, image_type, options={})
+    def merch_return(service_type, customer, retailer, permit_number, post_office, postage_delivery_unit,  ounces, image_type, options={})
       @service_type =service_type
       @customer = customer
       @retailer = retailer
       @permit_number = permit_number
-      @post_offcice =post_offcice
+      @post_office =post_offcice
       @postage_delivery_unit = postage_delivery_unit
       @ounces = ounces
       @image_type= image_type
@@ -62,7 +62,7 @@ module FotoVerite
         xm.PDUZip4(@postage_delivery_unit.zip4)
         xm.ServiceType(@service_type)
         xm.DeliveryConfirmation(@options[:confirmation] || "false")
-        xm.InsuranceValue(@options[:insurance])
+        xm.InsuranceValue(@options[:insurance_value])
         xm.MailingAckPackageID(@options[:id])
         xm.WeightInPounds("0")
         xm.WeightInOunces(@ounces)

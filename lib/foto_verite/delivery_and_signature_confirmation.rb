@@ -87,17 +87,18 @@ module  FotoVerite
         xm.ToState(@destination.state)
         xm.ToZip5(@destination.zip5)
         xm.ToZip4(@destination.zip4)
-        xm.WeightInOunces(@options[:weight])
+        xm.WeightInOunces(@options[:weight_in_ounces])
         xm.ServiceType(@service_type)
         xm.SeparateReceiptPage(@options[:seperate])
         xm.POZipCode(@options[:po_zip_code])
         xm.ImageType(@image_type)
         xm.LabelDate(@options[:label_date])
-        xm.CustomerRefNo(@options[:reference_number])
+        xm.CustomerRefNo(@options[:customer_reference_number])
         xm.AddressServiceRequested(@options[:address_service])
         xm.SenderName(@options[:sender_name])
         xm.SenderEMail(@options[:sender_email])
-        xm.RecipientName
+        xm.RecipientName(@options[:recipient_name])
+        xm.RecipientEmail(@options[:recipient_email])
       end
     end
 

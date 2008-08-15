@@ -21,6 +21,7 @@ module FotoVerite #:nodoc:
 
     alias_method :postal_code, :zip5
     alias_method :postal, :postal_code
+    alias_method :zip, :postal
     alias_method :province, :state
     alias_method :territory, :province
     alias_method :region, :province

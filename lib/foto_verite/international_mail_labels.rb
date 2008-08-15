@@ -21,7 +21,7 @@ module  FotoVerite
       :first_class_mail => "FirstClassMailIntlResponse",
     :first_class_mail_certify => "FirstClassMailIntlCertifyResponse"}
 
-    def express_mail_international_label(sender, receiver, items, image_type, po_box_flag ="N",
+    def express_mail_international_label(sender, receiver, items, content_type, image_type, po_box_flag ="N",
       image_layout="ALLINONEFILE", label_type="1", options={})
       @sender = sender
       @receiver = receiver
@@ -53,7 +53,7 @@ module  FotoVerite
       request= international_mail_labels_xml
       commit_international_mail_labels_xml(:express_mail_certify, request, @image_type, true)
     end
-    def priority_mail_international_label(sender, receiver, items, image_type, po_box_flag ="N",
+    def priority_mail_international_label(sender, receiver, items, content_type, image_type, po_box_flag ="N",
       image_layout="ALLINONEFILE", label_type="1", options={})
       @sender = sender
       @receiver = receiver
@@ -86,7 +86,7 @@ module  FotoVerite
       commit_international_mail_labels_xml(:priority_mail_certify, request, @image_type, true)
     end
 
-    def first_class_international_label(sender, receiver, items, image_type, po_box_flag ="N",
+    def first_class_international_label(sender, receiver, items, content_type, image_type, po_box_flag ="N",
       image_layout="ALLINONEFILE", label_type="1", options={})
       @sender = sender
       @receiver = receiver
@@ -137,7 +137,7 @@ module  FotoVerite
         xm.FromZip5(@sender.zip5)
         xm.FromZip4(@sender.zip4)
         xm.FromPhone(@sender.phone)
-        xm.FromCustomsReference(@options[:customs_reference])
+        xm.FromCustomsReference(@options[:from_customs_reference])
         xm.ToName(@receiver.name)
         xm.ToFirm(@receiver.firm_name)
         xm.ToAddress1(@receiver.address1)
@@ -151,7 +151,7 @@ module  FotoVerite
         xm.ToPhone(@receiver.phone)
         xm.ToFax(@options[:fax])
         xm.ToEmail(@options[:email])
-        xm.ToCustomsReference(@options[:customs_reference])
+        xm.ToCustomsReference(@options[:to_customs_reference])
         xm.NonDeliveryOption(@options[:non_delivery_option])
         xm.AltReturnAddress1(@options[:alt_return_address1])
         xm.AltReturnAddress2(@options[:alt_return_address2])
@@ -171,11 +171,11 @@ module  FotoVerite
             end
           end
         end
-        xm.InsuredNumber(@options[:insured_number])
+        xm.InsuredNumber(@options[:insurance_number])
         xm.InsuredAmount(@options[:insured_amount])
         xm.Postage(@options[:postage])
         xm.GrossPounds("0")
-        xm.GrossOunces(@items.sum {|item| item.ounces})
+        xm.GrossOunces(@items.sum {|item| item.ounces.to_f})
         xm.ContentType(@content_type)
         xm.ContentTypeOther(@options[:other])
         xm.Agreement("Y")
@@ -187,7 +187,7 @@ module  FotoVerite
         xm.ImageLayout(@image_layout)
         xm.CustomerRefNo(@options[:reference_number])
         xm.POZipCode(@options[:po_zip_code])
-        xm.LabelDate(@options[:date])
+        xm.LabelDate(@options[:label_date])
         xm.HoldForManifest(@options[:hold])
       end
     end
@@ -237,7 +237,7 @@ module  FotoVerite
           end
         end
         xm.GrossPounds("0")
-        xm.GrossOunces(@items.sum {|item| item.ounces})
+        xm.GrossOunces(@items.sum {|item| item.ounces.to_f})
         xm.Machinable(@options[:machinable])
         xm.ContentType(@content_type)
         xm.ContentTypeOther(@options[:other])

@@ -10,12 +10,10 @@ module  FotoVerite
     API_CODES = {:open_distrubute_priority => "OpenDistributePriority",
     :open_distribute_priority_certify => "OpenDistributePriorityCertify"}
 
-    def open_distrubute_priority_label(orgin, destination, package_weight_in_ounces, permit_number, issued_by, mail_type, image_type, label_type=1, options={})
+    def open_distrubute_priority_label(orgin, destination, package_weight_in_ounces,  mail_type, image_type, label_type=1, options={})
       @package_weight_in_ounces = package_weight_in_ounces
       @origin = origin
       @destination = destination
-      @permit_number = permit_number
-      @issued_by =issued_by
       @mail_type = mail_type
       @image_type = image_type
       @options =options
@@ -28,12 +26,10 @@ module  FotoVerite
     def canned_open_distrubute_priority_label_test
       @origin = Location.new( :name=> "John Smith",  :address2 => "6406 Ivy Lane",  :state => 'MD', :city => 'Greenbelt', :zip5 => '20770')
       @destination =Location.new( :name=> "Fairfax Post Office",  :address2 =>"10660 Page Ave",  :state => 'VA', :city => 'Fairfax', :zip5 => "22030", :facility_type => "DDU")
-      @permit_number = "1"
-      @issued_by ="21718"
       @mail_type = "Letters"
       @image_type = "PDF"
       @package_weight_in_ounces = 1
-      @options = {:address_service => true}
+      @options = {:address_service => true, :permit_number => "21718", :permit_zip => "07204"}
       @api = "OpenDistributePriorityCertifyRequest"
       request= open_distrubute_priority_xml
       commit_open_distrubute_priority_xml(:open_distribute_priority_certify, request, @image_type, true)
@@ -43,8 +39,8 @@ module  FotoVerite
     def open_distrubute_priority_xml
       xm = Builder::XmlMarkup.new
       xm.tag!("#{@api}", "USERID"=>"#{@username}") do
-        xm.PermitNumber(@permit_number)
-        xm.PermitIssuingPOZip5(@issued_by)
+        xm.PermitNumber(@options[:permit_number])
+        xm.PermitIssuingPOZip5(@options[:permit_zip])
         xm.FromName(@origin.name)
         xm.FromFirm(@origin.firm_name)
         xm.FromAddress1(@origin.address1) #Used for an apartment or suite number. Yes the API is a bit fucked.
@@ -53,7 +49,7 @@ module  FotoVerite
         xm.FromState(@origin.state)
         xm.FromZip5(@origin.zip5)
         xm.FromZip4(@origin.zip4)
-        xm.POZipCode(@options[:POZipCode])
+        xm.POZipCode(@options[:po_zip_code])
         xm.ToFacilityName(@destination.name)
         xm.ToFacilityAddress1(@destination.address1)
         xm.ToFacilityAddress2(@destination.address2)
