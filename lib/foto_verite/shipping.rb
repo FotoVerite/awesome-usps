@@ -3,28 +3,14 @@ module FotoVerite
 
     MAX_RETRIES = 3
 
-    ORIGIN_ZIP = "07024" #User should change this
-
     LIVE_DOMAIN = 'production.shippingapis.com'
     LIVE_RESOURCE = '/ShippingAPI.dll'
-
-    TEST_DOMAINS = { #indexed by security; e.g. TEST_DOMAINS[USE_SSL[:rates]]
-      true => 'secure.shippingapis.com',
-      false => 'testing.shippingapis.com'
-    }
-
-    TEST_RESOURCE = '/ShippingAPITest.dll'
 
     API_CODES = {
       :us_rates => 'RateV3',
       :world_rates => 'IntlRate',
-      :test => 'CarrierPickupAvailability'
     }
 
-    USE_SSL = {
-      :tracking => false,
-      :test => true
-    }
     CONTAINERS = {
       :envelope => 'Flat Rate Envelope',
       :box => 'Flat Rate Box'
@@ -62,6 +48,64 @@ module FotoVerite
       :all => 'ALL'
     }
 
+
+    # options Are?
+    def domestic_rates(origin_zip, destination_zip, packages, options={})
+      @origin_zip = origin_zip
+      @packages = packages
+      Array(@packages)  if not @packages.is_a? Array
+      @destination_zip = destination_zip
+      @options = options
+      request = xml_for_us
+      tracking_commit(:us_rates, request ,false)
+    end
+
+    # options Are?
+    def world_rates(country, packages, options={})
+      @packages = packages
+      Array(@packages)  if not @packages.is_a? Array
+      @country = country
+      @options = options
+      request = xml_for_world
+      tracking_commit(:world_rates, request ,false)
+    end
+
+    def canned_domestic_rates_test
+      @origin_zip = "07024"
+      @packages =[
+        Package.new(  100,
+        [93,10],
+        :cylinder => true),
+
+        Package.new(  (7.5 * 16),
+        [15, 10, 4.5],
+        :units => :imperial)
+      ]
+      @destination_zip = "10010"
+      @options = {}
+      request = xml_for_us
+      tracking_commit(:us_rates, request ,false)
+    end
+
+
+    def canned_world_rates_test
+      @packages =  [
+        Package.new(  100,
+        [93,10],
+        :cylinder => true),
+
+        Package.new(  (7.5 * 16),
+        [15, 10, 4.5],
+        :units => :imperial)
+      ]
+      @country = "Japan"
+      @options ={}
+      request = xml_for_world
+      tracking_commit(:world_rates, request ,false)
+    end
+
+    private
+
     #Determins size of package automatically. Taken from Active_Shipping
     def size_code_for(package)
       total = package.inches(:length) + package.inches(:girth)
@@ -74,25 +118,6 @@ module FotoVerite
       end
     end
 
-    # options Are?
-    def domestic_rates(destination_zip, packages, options={})
-      @packages = Array(packages)
-      @destination_zip = destination_zip
-      @options = options
-      request = xml_for_us
-      tracking_commit(:us_rates, request ,false)
-    end
-
-    # options Are?
-    def world_rates(country, packages, options={})
-      @packages = Array(packages)
-      @country = country
-      @options = options
-      request = xml_for_world
-      tracking_commit(:world_rates, request ,false)
-    end
-    
-    private
     # XML built with Build:XmlMarkup
     def xml_for_us
       xm = Builder::XmlMarkup.new
@@ -101,7 +126,7 @@ module FotoVerite
           p = @packages[id]
           xm.Package("ID" => "#{id}") {
             xm.Service("#{US_SERVICES[@options[:service]] || :all}")
-            xm.ZipOrigination(ORIGIN_ZIP)
+            xm.ZipOrigination(@origin_zip)
             xm.ZipDestination(@destination_zip)
             xm.Pounds("0")
             xm.Ounces("#{'%0.1f' % [p.ounces,1].max}")
@@ -142,9 +167,10 @@ module FotoVerite
     # {Package1 =>{'First Class' => "1.90"}Package2 => {'First Class' => "26.90" }
 
     def parse_us(xml)
-      domestic_rate_hash = Hash.new
-      i= 0
+      i=0
+      domestic_rate_array = []
       Hpricot.parse(xml).search('package').each do |package|
+        h = {}
         i+=1
         #This will return the first error description found in response xml.
         #TODO find way to return all errors.
@@ -153,26 +179,27 @@ module FotoVerite
 
           return "package number #{i} has the error #{package.search("description").inner_html} please fix before continuing"
         end
-        #Initializing hash for each package. Is there a better way I wonder.
-        domestic_rate_hash["Package#{i}"] = {}
         #Going through each package and finding the rate.
         package.search("postage").each do |services|
+
           mailservice=services.search("mailservice")
           rate = services.search("rate")
-          domestic_rate_hash["Package#{i}"][mailservice.inner_html] = rate.inner_html
+          h[mailservice.inner_html] = rate.inner_html
         end
+        domestic_rate_array << h
       end
-      if domestic_rate_hash == {}
-        domestic_rate_hash = Hpricot.parse(xml).search('description').inner_html
+      if  domestic_rate_array == []
+        return Hpricot.parse(xml).search('description').inner_html
       end
-      return domestic_rate_hash
+      return domestic_rate_array
     end
-    
+
     def parse_world(xml)
-      international_rate_hash = Hash.new
+      international_rate_array = []
       i= 0
       Hpricot.parse(xml).search('package').each do |package|
         i+=1
+        h = {}
         #This will return the first error description found in response xml.
         #TODO find way to return all errors.
         if package.search("error") != []
@@ -180,19 +207,20 @@ module FotoVerite
 
           return "package number #{i} has the error #{package.search("description").inner_html} please fix before continuing"
         end
-        #Initializing hash for each package. Is there a better way I wonder.
-        international_rate_hash["Package#{i}"] = {}
         #Going through each package and finding the rate.
         package.search("service").each do |services|
+
           svcdescription=services.search("svcdescription")
           rate = services.search("postage")
-          international_rate_hash["Package#{i}"][svcdescription.inner_html] = rate.inner_html
+          h[svcdescription.inner_html] = rate.inner_html
+
         end
+        international_rate_array << h
       end
-      if international_rate_hash == {}
-        international_rate_hash = Hpricot.parse(xml).search('description').inner_html
+      if   international_rate_array == []
+        return Hpricot.parse(xml).search('description').inner_html
       end
-      return international_rate_hash
+      return international_rate_array
     end
 
     def tracking_commit(action, request, test = false)
@@ -202,8 +230,8 @@ module FotoVerite
         req = Net::HTTP::Post.new(url.path)
         req.set_form_data({'API' => API_CODES[action], 'XML' => request})
         response = Net::HTTP.new(url.host, url.port)
-        response.open_timeout = 5
-        response.read_timeout = 5
+        response.open_timeout = 2
+        response.read_timeout = 2
         response.start
       rescue Timeout::Error
         if retries > 0
@@ -233,4 +261,3 @@ module FotoVerite
     end
   end
 end
-

@@ -20,7 +20,7 @@ module FotoVerite
       commit_express_mail_xml(:express_mail_label, request, image_type, false)
     end
 
-    def express_mail_label_canned_test
+    def canned_express_mail_label_test
       @orgin = Location.new( :first_name=> "Craig", :last_name=>"Engle",  :address2 => "6406 Ivy Lane",  :state => 'MD', :city => 'Greenbelt', :zip5 => '20770', :phone => "2127658576")
       @destination =Location.new( :firm_name=> "XYZ Corp.",  :address2 =>"1100 West Avenue", :address2 => "6406 Ivy Lane",  :state => 'MD', :city => 'Greenbelt', :zip5 => '20770')
       @ounces = "50"

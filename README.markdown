@@ -90,9 +90,7 @@ Object Methods are as follow
 
 # Sample Usage
 	#In your environment.rb or production.rb
-	
-    require 'active_shipping'
-    include FotoVerite::AwesomeUsps
+    include FotoVerite
 
 	# Then to access the plugin you much create an instance of USPS class
 	 usps = USPS.new('Your user name')
@@ -376,8 +374,8 @@ The nicest way to submit changes would be to set up a GitHub account and fork th
 
 ## Legal Mumbo Jumbo
 
-Unless otherwise noted in specific files, all code in the Active Shipping project is under the copyright and license described in the included MIT-LICENSE file.
+Unless otherwise noted in specific files, all code in the Awesome USPS is under the copyright and license described in the included MIT-LICENSE file.
 
 Packages Module created by James MacAulay
 
-Copyright (c) 2008 FotoVerite, released under the MIT license
+Copyright (c) 2008 Matthew Bergman, released under the MIT license
