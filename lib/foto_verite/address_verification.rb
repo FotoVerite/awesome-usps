@@ -16,67 +16,63 @@ module FotoVerite
     # Examines address and fills in missing information. Address must include city & state or the zip to be processed.
     # Can do up to an array of five
     def veryify_address(locations)
-      @locations = locations
-      @locations.to_a if not  @locations.is_a? Array
-      @api = "AddressValidateRequest"
-      request = xml_for_verify_address
-      commit_address_information_request(:verify_address, request ,false)
+      locations = Array(locations) if not locations.is_a? Array
+      api_request = "AddressValidateRequest"
+      request = xml_for_verify_address(api_request, locations)
+      gateway_commit(:verify_address, 'Verify', request, :live)
     end
 
     def zip_lookup(locations)
-      @locations = locations
-      @locations = Array(@locations) if not @locations.is_a? Array
-      @api = "ZipCodeLookupRequest"
-      request = xml_for_address_information_api
-      commit_address_information_request(:zip_lookup, request ,false)
+      locations = Array(locations) if not locations.is_a? Array
+      api_request = "ZipCodeLookupRequest"
+      request = xml_for_address_information_api(api_request, locations)
+      gateway_commit(:zip_lookup, 'ZipCodeLookup',request, :live)
     end
 
     def city_state_lookup(locations)
-      @locations = locations
-      @locations = Array(@locations) if not @locations.is_a? Array
-      @api = "CityStateLookupRequest"
-      request = xml_for_address_information_api
-      commit_address_information_request(:zip_lookup, request ,false)
+      locations = Array(locations) if not locations.is_a? Array
+      api_request = "CityStateLookupRequest"
+      request = xml_for_address_information_api(api_request, locations)
+      gateway_commit(:zip_lookup, 'CityStateLookup', request, :live)
     end
 
 
     def canned_verify_address_test
-      @locations = [Location.new(:address2 => "6406 Ivy Lane", :city =>"Greenbelt", :state => "MD"), Location.new(:address2=>"8 Wildwood Drive", :city => "Old Lyme",:state => "CT", :zip5 => "06371"   )]
-      @api = "AddressValidateRequest"
-      request = xml_for_address_information_api
-      commit_address_information_request(:verify_address, request ,true)
+      locations = [Location.new(:address2 => "6406 Ivy Lane", :city =>"Greenbelt", :state => "MD"), Location.new(:address2=>"8 Wildwood Drive", :city => "Old Lyme",:state => "CT", :zip5 => "06371"   )]
+      api_request = "AddressValidateRequest"
+      request = xml_for_address_information_api(api_request, locations)
+      gateway_commit(:verify_address, 'Verify', request, :test)
     end
 
     def canned_zip_lookup_test
-      @locations = [Location.new(:address2 => "6406 Ivy Lane", :city =>"Greenbelt", :state => "MD"), Location.new(:address2=>"8 Wildwood Drive", :city => "Old Lyme",:state => "CT", :zip5 => "06371"   )]
-      @api = "ZipCodeLookupRequest"
-      request = xml_for_address_information_api
-      commit_address_information_request(:zip_lookup, request ,true)
+      locations = [Location.new(:address2 => "6406 Ivy Lane", :city =>"Greenbelt", :state => "MD"), Location.new(:address2=>"8 Wildwood Drive", :city => "Old Lyme",:state => "CT", :zip5 => "06371"   )]
+      api_request = "ZipCodeLookupRequest"
+      request = xml_for_address_information_api(api_request, locations)
+      gateway_commit(:zip_lookup, 'ZipCodeLookup', request, :test)
     end
 
     def canned_city_state_lookup_test
-      @locations = [Location.new(:address2 => "6406 Ivy Lane", :city =>"Greenbelt", :state => "MD"), Location.new(:address2=>"8 Wildwood Drive", :city => "Old Lyme",:state => "CT", :zip5 => "06371"   )]
-      @api = "CityStateLookupRequest"
-      request = xml_for_address_information_api
-      commit_address_information_request(:zip_lookup, request ,true)
+      locations = [Location.new(:address2 => "6406 Ivy Lane", :city =>"Greenbelt", :state => "MD"), Location.new(:address2=>"8 Wildwood Drive", :city => "Old Lyme",:state => "CT", :zip5 => "06371")]
+      api_request = "CityStateLookupRequest"
+      request = xml_for_address_information_api(api_request, locations)
+      gateway_commit(:zip_lookup, 'CityStateLookup', request, :test)
     end
 
-    private
     # XML from  Builder::XmlMarkup.new
-    def xml_for_address_information_api
+    def xml_for_address_information_api(api_request, locations)
       xm = Builder::XmlMarkup.new
-      xm.tag!("#{@api}", "USERID"=>"#{@username}") do
-        @locations.each_index do |id|
-          l=@locations[id]
+      xm.tag!("#{api_request}", "USERID"=>"#{@username}") do
+        locations.each_index do |id|
+          l=locations[id]
           xm.Address("ID" => "#{id}") do
             xm.FirmName(l.firm_name)
             xm.Address1(l.address1)
             xm.Address2(l.address2)
-            if @api !="CityStateLookupRequest"
+            if api_request !="CityStateLookupRequest"
               xm.City(l.city)
               xm.State(l.state)
             end
-            if @api != "ZipCodeLookupRequest"
+            if api_request != "ZipCodeLookupRequest"
               xm.Zip5(l.zip5)
               xm.Zip4(l.zip4)
             end
@@ -85,10 +81,8 @@ module FotoVerite
       end
     end
 
-
     # Parses the XML into an array broken up by each address.
     # For verify_address :verified will be false if multiple address were found.
-
     def parse_address_information(xml)
       i = 0
       list_of_verified_addresses = []
@@ -115,41 +109,6 @@ module FotoVerite
         return  error.search("description").inner_html
       end
       return list_of_verified_addresses
-    end
-
-
-
-    def commit_address_information_request(action, request, test = false)
-      retries = MAX_RETRIES
-      begin
-        url = URI.parse(test ? "http://#{TEST_DOMAIN}#{TEST_RESOURCE}" : "http://#{LIVE_DOMAIN}#{LIVE_RESOURCE}")
-        req = Net::HTTP::Post.new(url.path)
-        req.set_form_data({'API' => API_CODES[action], 'XML' => request})
-        response = Net::HTTP.new(url.host, url.port)
-        response.open_timeout = 5
-        response.read_timeout = 5
-        response.start
-      rescue Timeout::Error
-        if retries > 0
-          retries -= 1
-          retry
-        else
-          RAILS_DEFAULT_LOGGER.warn "The connection to the remote server timed out"
-          return "We appoligize for the inconvience but our USPS service is busy at the moment. To retry please refresh the browser"
-
-        end
-      rescue SocketError
-        RAILS_DEFAULT_LOGGER.error "There is a socket error with USPS plugin"
-        return "We appoligize for the inconvience but there is a problem with our server. To retry please refresh the browser"
-      end
-
-      response = response.request(req)
-      case response
-      when Net::HTTPSuccess
-        parse_address_information(response.body)
-      else
-        RAILS_DEFAULT_LOGGER.warn("USPS plugin settings are wrong #{response}")
-      end
     end
 
   end

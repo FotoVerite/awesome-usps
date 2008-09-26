@@ -51,28 +51,21 @@ module FotoVerite
 
     # options Are?
     def domestic_rates(origin_zip, destination_zip, packages, options={})
-      @origin_zip = origin_zip
-      @packages = packages
-      Array(@packages)  if not @packages.is_a? Array
-      @destination_zip = destination_zip
-      @options = options
-      request = xml_for_us
-      tracking_commit(:us_rates, request ,false)
+      Array(packages)  if not packages.is_a? Array
+      request = xml_for_us(origin_zip, destination_zip, packages, options)
+      gateway_commit(:us_rates, 'RateV3', request, :live)
     end
 
     # options Are?
-    def world_rates(country, packages, options={})
-      @packages = packages
-      Array(@packages)  if not @packages.is_a? Array
-      @country = country
-      @options = options
-      request = xml_for_world
-      tracking_commit(:world_rates, request ,false)
+    def world_rates(country, packages, api_request='IntlRate', options={})
+      Array(packages)  if not packages.is_a? Array
+      request = xml_for_world(country, packages, options)
+      gateway_commit(:world_rates, 'IntlRate', request, :live)
     end
 
     def canned_domestic_rates_test
-      @origin_zip = "07024"
-      @packages =[
+      origin_zip = "07024"
+      packages =[
         Package.new(  100,
         [93,10],
         :cylinder => true),
@@ -81,15 +74,16 @@ module FotoVerite
         [15, 10, 4.5],
         :units => :imperial)
       ]
-      @destination_zip = "10010"
-      @options = {}
-      request = xml_for_us
-      tracking_commit(:us_rates, request ,false)
+      destination_zip = "10010"
+      options = {}
+      request = xml_for_us(origin_zip, destination_zip, packages, options)
+      gateway_commit(:us_rates, 'RateV3', request, :live)
     end
 
 
     def canned_world_rates_test
-      @packages =  [
+      api_request='IntlRate'
+      packages =  [
         Package.new(  100,
         [93,10],
         :cylinder => true),
@@ -98,10 +92,10 @@ module FotoVerite
         [15, 10, 4.5],
         :units => :imperial)
       ]
-      @country = "Japan"
-      @options ={}
-      request = xml_for_world
-      tracking_commit(:world_rates, request ,false)
+      country = "Japan"
+      options ={}
+      request = xml_for_world(country, packages, options)
+      gateway_commit(:world_rates,'IntlRate', request, :live)
     end
 
     private
@@ -119,15 +113,15 @@ module FotoVerite
     end
 
     # XML built with Build:XmlMarkup
-    def xml_for_us
+    def xml_for_us(origin_zip, destination_zip, packages, options)
       xm = Builder::XmlMarkup.new
       xm.RateV3Request("USERID"=>"#{@username}") do
-        @packages.each_index do |id|
-          p = @packages[id]
+        packages.each_index do |id|
+          p = packages[id]
           xm.Package("ID" => "#{id}") {
-            xm.Service("#{US_SERVICES[@options[:service]] || :all}")
-            xm.ZipOrigination(@origin_zip)
-            xm.ZipDestination(@destination_zip)
+            xm.Service("#{US_SERVICES[options[:service]] || :all}")
+            xm.ZipOrigination(origin_zip)
+            xm.ZipDestination(destination_zip)
             xm.Pounds("0")
             xm.Ounces("#{'%0.1f' % [p.ounces,1].max}")
             if p.options[:container] and [nil,:all,:express,:priority].include? p.service
@@ -145,17 +139,17 @@ module FotoVerite
     end
 
     # XML built with Build:XmlMarkup
-    def xml_for_world
+    def xml_for_world(country, packages, options)
       xm = Builder::XmlMarkup.new
       xm.IntlRateRequest("USERID"=>"#{@username}") do
-        @packages.each_index do |id|
-          p = @packages[id]
+        packages.each_index do |id|
+          p = packages[id]
           xm.Package("ID" => "#{id}") {
             xm.Pounds("0")
             xm.Ounces("#{'%0.1f' % [p.ounces,1].max.ceil}")
             xm.MailType("#{MAIL_TYPES[p.options[:mail_type]] || 'Package'}")
             xm.ValueOfContents(p.value / 100.0) if p.value && p.currency == 'USD'
-            xm.Country(@country)
+            xm.Country(country)
           }
         end
       end
@@ -223,41 +217,5 @@ module FotoVerite
       return international_rate_array
     end
 
-    def tracking_commit(action, request, test = false)
-      retries = MAX_RETRIES
-      begin
-        url = URI.parse("http://#{LIVE_DOMAIN}#{LIVE_RESOURCE}")
-        req = Net::HTTP::Post.new(url.path)
-        req.set_form_data({'API' => API_CODES[action], 'XML' => request})
-        response = Net::HTTP.new(url.host, url.port)
-        response.open_timeout = 2
-        response.read_timeout = 2
-        response.start
-      rescue Timeout::Error
-        if retries > 0
-          retries -= 1
-          retry
-        else
-          RAILS_DEFAULT_LOGGER.warn "The connection to the remote server timed out"
-          return "We appoligize for the inconvience but our USPS service is busy at the moment. To retry please refresh the browser"
-        end
-      rescue SocketError
-        RAILS_DEFAULT_LOGGER.error "There is a socket error with USPS plugin"
-        return "We appoligize for the inconvience but there is a problem with our server. To retry please refresh the browser"
-      end
-
-      response = response.request(req)
-      case response
-      when Net::HTTPSuccess, Net::HTTPRedirection
-        if (action == :us_rates)
-          parse_us(response.body)
-        else
-          parse_world(response.body)
-        end
-      else
-        RAILS_DEFAULT_LOGGER.warn("USPS plugin settings are wrong #{response}")
-        return "USPS plugin settings are wrong #{response}"
-      end
-    end
   end
 end

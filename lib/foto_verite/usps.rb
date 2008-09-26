@@ -9,6 +9,7 @@ module FotoVerite
       param
     end
     include FotoVerite::Tracking
+    include FotoVerite::Gateway
     include FotoVerite::Shipping
     include FotoVerite::DeliveryAndSignatureConfirmation
     include FotoVerite::ServiceStandard

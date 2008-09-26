@@ -1,72 +1,60 @@
 module FotoVerite
   module ServiceStandard
-    MAX_RETRIES = 3
-
-    LIVE_DOMAIN = 'production.shippingapis.com'
-    LIVE_RESOURCE = '/ShippingAPI.dll'
-
-    TEST_DOMAIN ='testing.shippingapis.com'
-    TEST_RESOURCE = '/ShippingAPITest.dll'
-
-    API_CODES ={
-      :priority_mail => 'PriorityMail',
-      :standard => 'StandardB',
-      :express => 'ExpressMailCommitment'
-    }
-
+    
     # Takes your package tracking number and returns information for the USPS web API
-    def priority_mail_estimated_time(origin, destination)
-      @origin = orgin
-      @destination=destination
-      request = xml_for_estimated_time_for_delivery("PriorityMailRequest")
-      commit_service_standard_request(:priority_mail, request ,false)
+    def priority_mail_estimated_time(origin, destination, api_request="PriorityMailRequest")
+      origin = orgin
+      destination=destination
+      request = xml_for_estimated_time_for_delivery(api_request, origin, destination)
+      commit_service_standard_request(:priority_mail, 'PriorityMail', request , :live)
     end
 
-    def standard_mail_estimated_time(origin, destination)
-      @origin = orgin
-      @destination=destination
-      request = xml_for_estimated_time_for_delivery("StandardBRequest")
-      commit_service_standard_request(:standard, request ,false)
+    def standard_mail_estimated_time(origin, destination, api_request='StandardBRequest')
+      origin = orgin
+      destination=destination
+      request = xml_for_estimated_time_for_delivery(api_request, origin, destination)
+      gateway_commit(:standard, 'StandardB', request, :live)
     end
 
-    def express_mail_commitment(origin, destination, date=nil)
-      @origin = orgin
-      @destination=destination
-      @date = date
-      request = xml_for_estimated_time_for_delivery("ExpressMailCommitmentRequest")
-      commit_service_standard_request(:express, request ,false)
+    def express_mail_commitment(origin, destination, date=nil, api_request='ExpressMailCommitmentRequest')
+      xml_for_estimated_time_for_delivery(api_request, origin, destination, date)
+      gateway_commit(:express, 'ExpressMailCommitment', request, :live)
     end
 
     def canned_standard_mail_estimated_time_test
-      @origin =  Location.new(  :zip5 => '4')
-      @destination = Location.new( :zip5 => '4')
-      request = xml_for_estimated_time_for_delivery("PriorityMailRequest")
-      commit_service_standard_request(:priority_mail, request ,true)
+      origin =  Location.new(  :zip5 => '4')
+      destination = Location.new( :zip5 => '4')
+      api_request="StandardBRequest"
+      request = xml_for_estimated_time_for_delivery(api_request, origin, destination)
+      gateway_commit(:priority_mail, 'PriorityMail', request,  :test)
     end
 
     def canned_priority_mail_estimated_time_test
-      @origin =  Location.new(  :zip5 => '4')
-      @destination = Location.new( :zip5 => '4')
-      request = xml_for_estimated_time_for_delivery("PriorityMailRequest")
-      commit_service_standard_request(:standard, request ,true)
+      origin =  Location.new(  :zip5 => '4')
+      destination = Location.new( :zip5 => '4')
+      api_request="PriorityMailRequest"
+      request = xml_for_estimated_time_for_delivery(api_request, origin, destination)
+      gateway_commit(:standard, 'StandardB',  request,  :test)
     end
 
     def canned_express_mail_commitment_test
-      @origin= Location.new(  :zip5 =>'20770')
-      @destination=Location.new( :zip5 =>'11210')
-      @date = '05-Aug-2004'
-      request = xml_for_estimated_time_for_delivery("ExpressMailCommitmentRequest")
-      commit_service_standard_request(:express, request ,true)
+      origin= Location.new(  :zip5 =>'20770')
+      destination=Location.new( :zip5 =>'11210')
+      date = '05-Aug-2004'
+      api_request = 'ExpressMailCommitmentRequest'
+      request = xml_for_estimated_time_for_delivery(api_request, origin, destination, date)
+      gateway_commit(:express, 'ExpressMailCommitment', request,  :test)
     end
 
     # XML from a straight string.
-    # "<TrackFieldRequest USERID='#{@username}'><TrackID ID='#{@tracking_number}'></TrackID></TrackFieldRequest>"
-    def xml_for_estimated_time_for_delivery(type_of_request)
+    def xml_for_estimated_time_for_delivery(api_request, origin, destination, date=nil)
       xm = Builder::XmlMarkup.new
-      xm.tag!(type_of_request, "USERID"=>"#{@username}") do
-        xm.OriginZIP(@origin.zip5)
-        xm.DestinationZIP(@destination.zip5)
-        xm.Date(@date) if type_of_request == "ExpressMailCommitmentRequest"
+      xm.tag!(api_request, "USERID"=>"#{@username}") do
+        xm.OriginZIP(origin.zip5)
+        xm.DestinationZIP(destination.zip5)
+        if api_request == 'ExpressMailCommitmentRequest'
+          xm.Date(date)
+        end
       end
     end
 
@@ -98,44 +86,6 @@ module FotoVerite
           location_list << h
         end
         return   location_list
-      end
-    end
-
-    private
-    def commit_service_standard_request(action, request, test = false)
-      retries = MAX_RETRIES
-      begin
-        url = URI.parse(test ? "http://#{TEST_DOMAIN}#{TEST_RESOURCE}" : "http://#{LIVE_DOMAIN}#{LIVE_RESOURCE}")
-        req = Net::HTTP::Post.new(url.path)
-        req.set_form_data({'API' => API_CODES[action], 'XML' => request})
-        response = Net::HTTP.new(url.host, url.port)
-        response.open_timeout = 5
-        response.read_timeout = 5
-        response.start
-      rescue Timeout::Error
-        if retries > 0
-          retries -= 1
-          retry
-        else
-          RAILS_DEFAULT_LOGGER.warn "The connection to the remote server timed out"
-          return "We appoligize for the inconvience but our USPS service is busy at the moment. To retry please refresh the browser"
-
-        end
-      rescue SocketError
-        RAILS_DEFAULT_LOGGER.error "There is a socket error with USPS plugin"
-        return "We appoligize for the inconvience but there is a problem with our server. To retry please refresh the browser"
-      end
-
-      response = response.request(req)
-      case response
-      when Net::HTTPSuccess
-        if action == :express
-          parse_express(response.body)
-        else
-          parse_service(response.body)
-        end
-      else
-        RAILS_DEFAULT_LOGGER.warn("USPS plugin settings are wrong #{response}")
       end
     end
 
