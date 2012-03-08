@@ -1,4 +1,6 @@
-$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__))
+lib = File.expand_path(File.dirname(__FILE__))
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+
 require "awesome_usps/version"
 require "awesome_usps/usps"
 
