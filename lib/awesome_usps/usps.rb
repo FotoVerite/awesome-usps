@@ -8,16 +8,15 @@ module AwesomeUSPS
       raise ERROR_MSG if param.blank?
       param
     end
-    include AwesomeUSPS::Tracking
-    include AwesomeUSPS::Gateway
-    include AwesomeUSPS::Shipping
-    include AwesomeUSPS::DeliveryAndSignatureConfirmation
-    include AwesomeUSPS::ServiceStandard
-    include AwesomeUSPS::OpenDistrubutePriority
-    include AwesomeUSPS::ElectricMerchandisReturn
-    include AwesomeUSPS::ExpressMail
-    include AwesomeUSPS::AddressVerification
-    include AwesomeUSPS::InternationalMailLabels
 
+    modules = %w(tracking gateway shipping delivery_and_signature_confirmation
+                 service_standard open_distribute_priority
+                 electric_merchandise_return express_mail address_verification
+                 international_mail_labels)
+
+    modules.each do |m|
+      require File.join("awesome_usps", m)
+      include "AwesomeUSPS::#{m.camelize}".constantize
+    end
   end
 end
