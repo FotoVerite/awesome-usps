@@ -1,4 +1,4 @@
-module FotoVerite
+module AwesomeUSPS
   module AddressVerification
     MAX_RETRIES = 3
 

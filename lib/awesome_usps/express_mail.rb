@@ -1,4 +1,4 @@
-module FotoVerite
+module AwesomeUSPS
   module ExpressMail
 
     def express_mail_label(orgin, destination, ounces, image_type, request_api = "ExpressMailLabelRequest", options={})

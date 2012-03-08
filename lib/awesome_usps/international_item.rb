@@ -1,4 +1,4 @@
-module FotoVerite #:nodoc:
+module AwesomeUSPS #:nodoc:
   class InternationalItem
 
     attr_reader :options,

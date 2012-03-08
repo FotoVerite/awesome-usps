@@ -1,4 +1,4 @@
-module  FotoVerite
+module  AwesomeUSPS
   module DeliveryAndSignatureConfirmation
 
     def delivery_confirmation_label(origin, destination, service_type, image_type, label_type=1, api_request = "DeliveryConfirmationV3.0Request", options={})

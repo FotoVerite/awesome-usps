@@ -1,4 +1,4 @@
-module  FotoVerite
+module  AwesomeUSPS
   module OpenDistrubutePriority
 
     def open_distrubute_priority_label(origin, destination, package_weight_in_ounces,  mail_type, image_type, label_type=1, api_requst = "OpenDistributePriorityRequest", options={})
