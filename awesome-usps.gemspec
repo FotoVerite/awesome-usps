@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.email       = ["mzbphoto@gmail.com", "wes@turbovote.org"]
   s.homepage    = "https://github.com/FotoVerite/awesome-usps"
   s.summary     = %q{awesome-usps is a Ruby wrapper around the USPS web API}
-  s.description = File.read("./README.markdown")
+  s.description = %q{A ruby wrapper around the various USPS APIs for generating rates, tracking information, label generation, and address checking.}
 
   s.rubyforge_project = "awesome-usps"
 
