@@ -1,13 +1,13 @@
-module  FotoVerite
-  module OpenDistrubutePriority
+module  AwesomeUSPS
+  module OpenDistributePriority
 
-    def open_distrubute_priority_label(origin, destination, package_weight_in_ounces,  mail_type, image_type, label_type=1, api_requst = "OpenDistributePriorityRequest", options={})
-      request = open_distrubute_priority_xml(api_requst, origin, destination, package_weight_in_ounces,  mail_type, image_type, label_type, options)
+    def open_distribute_priority_label(origin, destination, package_weight_in_ounces,  mail_type, image_type, label_type=1, api_requst = "OpenDistributePriorityRequest", options={})
+      request = open_distribute_priority_xml(api_requst, origin, destination, package_weight_in_ounces,  mail_type, image_type, label_type, options)
       #YES THE API IS THAT STUPID THAT WE MUST PASS WHAT TYPE OF MIME TYPE!
-      gateway_commit(:open_distrubute_priority, 'OpenDistributePriority', request, :ssl, image_type)
+      gateway_commit(:open_distribute_priority, 'OpenDistributePriority', request, :ssl, image_type)
     end
 
-    def canned_open_distrubute_priority_label_test
+    def canned_open_distribute_priority_label_test
       origin = Location.new( :name=> "John Smith",  :address2 => "6406 Ivy Lane",  :state => 'MD', :city => 'Greenbelt', :zip5 => '20770')
       destination =Location.new( :name=> "Fairfax Post Office",  :address2 =>"10660 Page Ave",  :state => 'VA', :city => 'Fairfax', :zip5 => "22030", :facility_type => "DDU")
       mail_type = "Letters"
@@ -16,12 +16,12 @@ module  FotoVerite
       options = {:address_service => true, :permit_number => "21718", :permit_zip => "07204"}
       api_requst = "OpenDistributePriorityCertifyRequest"
       label_type=1
-      request= open_distrubute_priority_xml(api_requst, origin, destination, package_weight_in_ounces,  mail_type, image_type, label_type, options)
+      request= open_distribute_priority_xml(api_requst, origin, destination, package_weight_in_ounces,  mail_type, image_type, label_type, options)
       gateway_commit(:open_distribute_priority_certify, 'OpenDistributePriorityCertify', request, :ssl, image_type)
     end
 
     private
-    def open_distrubute_priority_xml(api_requst, origin, destination, package_weight_in_ounces,  mail_type, image_type, label_type, options)
+    def open_distribute_priority_xml(api_requst, origin, destination, package_weight_in_ounces,  mail_type, image_type, label_type, options)
       xm = Builder::XmlMarkup.new
       xm.tag!("#{api_requst}", "USERID"=>"#{@username}") do
         xm.PermitNumber(options[:permit_number])
@@ -54,7 +54,7 @@ module  FotoVerite
       end
     end
 
-    def parse_open_distrubute_priority(xml, image_type)
+    def parse_open_distribute_priority(xml, image_type)
       if image_type == "TIF"
         image_type = "image/tif"
       else

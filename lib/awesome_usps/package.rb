@@ -1,4 +1,4 @@
-module FotoVerite #:nodoc:
+module AwesomeUSPS #:nodoc:
   class Package
     GRAMS_IN_AN_OUNCE = 28.3495231
     OUNCES_IN_A_GRAM = 0.0352739619

@@ -1,4 +1,4 @@
-module FotoVerite
+module AwesomeUSPS
   module Gateway
 
     MAX_RETRIES = 3

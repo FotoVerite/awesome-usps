@@ -1,4 +1,4 @@
-module FotoVerite
+module AwesomeUSPS
   module Tracking
     
     # Takes your package tracking number and returns information for the USPS web API

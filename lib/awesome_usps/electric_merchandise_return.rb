@@ -1,5 +1,5 @@
-module FotoVerite
-  module ElectricMerchandisReturn
+module AwesomeUSPS
+  module ElectricMerchandiseReturn
 
     def merch_return(service_type, customer, retailer, permit_number, post_office, postage_delivery_unit,  ounces, image_type, api_request = "EMRSV3.0Request", options={})
       request = merch_return_xml(api_request, service_type, customer, retailer, permit_number, post_office, postage_delivery_unit,  ounces, image_type, options)

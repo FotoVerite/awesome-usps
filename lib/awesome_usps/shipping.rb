@@ -1,4 +1,4 @@
-module FotoVerite
+module AwesomeUSPS
   module Shipping
 
     MAX_RETRIES = 3

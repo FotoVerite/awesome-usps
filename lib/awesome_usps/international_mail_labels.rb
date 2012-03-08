@@ -1,4 +1,4 @@
-module  FotoVerite
+module  AwesomeUSPS
   module InternationalMailLabels
 
     MAX_RETRIES = 3
