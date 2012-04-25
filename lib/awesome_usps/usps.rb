@@ -20,8 +20,7 @@ module AwesomeUSPS
     %w(tracking gateway shipping delivery_and_signature_confirmation
        service_standard open_distribute_priority electric_merchandise_return
        espress_mail address_verification international_mail_labels).each do |m|
-         include "AwesomeUSPS::#{m.camelize}".constantize
-       end
-     end
+      include "AwesomeUSPS::#{m.camelize}".constantize
+    end
   end
 end
