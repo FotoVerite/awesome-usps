@@ -45,7 +45,7 @@ module AwesomeUSPS #:nodoc:
     end
 
     def zip9
-      if zip4.nil? or zip4.blank?
+      if zip4.blank?
         zip5
       else
         "#{zip5}-#{zip4}"
