@@ -44,6 +44,14 @@ module AwesomeUSPS #:nodoc:
       @from_urbanization =options[:from_urbanization]
     end
 
+    def zip9
+      if zip4.nil? or zip4.blank?
+        zip5
+      else
+        "#{zip5}-#{zip4}"
+      end
+    end
+
     def self.from(object, options={})
       return object if object.is_a? AwesomeUSPS::Location
       attr_mappings = {
