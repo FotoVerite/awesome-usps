@@ -1,3 +1,5 @@
+require 'hpricot'
+
 module AwesomeUSPS
   module AddressVerification
     MAX_RETRIES = 3
@@ -105,7 +107,7 @@ module AwesomeUSPS
       end
       #Check if there was an error in the basic XML formating
       if list_of_verified_addresses == []
-        error =Hpricot.parse(xml)/:error
+        error = Hpricot.parse(xml)/:error
         return  error.search("description").inner_html
       end
       return list_of_verified_addresses
