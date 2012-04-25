@@ -19,7 +19,7 @@ module AwesomeUSPS
     def verify_address(locations)
       locations = Array(locations) if not locations.is_a? Array
       api_request = "AddressValidateRequest"
-      request = xml_for_verify_address(api_request, locations)
+      request = xml_for_address_information_api(api_request, locations)
       gateway_commit(:verify_address, 'Verify', request, :live)
     end
 
