@@ -1,10 +1,12 @@
-lib_path = File.expand_path(File.dirname(__FILE__))
-modules = Dir[File.join(lib_path, "*.rb")].map { |f| File.basename f }
-modules.each do |m|
-  require File.join("awesome_usps", m)
-end
+require 'active_support/core_ext/string'
 
 module AwesomeUSPS
+  lib_path = File.expand_path(File.dirname(__FILE__))
+  modules = Dir[File.join(lib_path, "*.rb")].map { |f| File.basename f, '.rb' }
+  modules.each do |m|
+    autoload m.camelize.to_sym, File.join("awesome_usps", m)
+  end
+
   class USPS
     def initialize(username)
       @username = validate(username)
