@@ -93,7 +93,7 @@ module AwesomeUSPS
         h = {}
         #Check if there was an error in an address element
         if address.search("error") != []
-          logger.info("Address number #{i} has the error '#{address.search("description").inner_html}' please fix before continuing")
+          AwesomeUSPS.logger.info("Address number #{i} has the error '#{address.search("description").inner_html}' please fix before continuing")
 
           return "Address number #{i} has the error '#{address.search("description").inner_html}' please fix before continuing"
         end
@@ -112,18 +112,5 @@ module AwesomeUSPS
       end
       return list_of_verified_addresses
     end
-
-    private
-
-    def logger
-      @logger ||= (
-        if defined?(Rails)
-          Rails.logger
-        else
-          Logger.new(STDOUT)
-        end
-      )
-    end
-
   end
 end

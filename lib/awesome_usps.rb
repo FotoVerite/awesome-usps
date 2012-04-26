@@ -8,4 +8,14 @@ module AwesomeUSPS
   def self.new(*args)
     AwesomeUSPS::USPS.new(*args)
   end
+
+  def self.logger
+    @logger ||= (
+      if defined?(Rails)
+        Rails.logger
+      else
+        Logger.new(STDOUT)
+      end
+    )
+  end
 end

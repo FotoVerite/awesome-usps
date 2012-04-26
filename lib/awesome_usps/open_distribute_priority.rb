@@ -62,7 +62,7 @@ module  AwesomeUSPS
       end
       parse = Hpricot.parse(xml)/:error
       if parse != []
-        RAILS_DEFAULT_LOGGER.info "#{xml}"
+        AwesomeUSPS.logger.info "#{xml}"
         return (Hpricot.parse(xml)/:description).inner_html
       else
         number = Hpricot.parse(xml)/:opendistributeprioritynumber

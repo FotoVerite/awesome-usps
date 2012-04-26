@@ -71,7 +71,7 @@ module AwesomeUSPS
       end
       parse = Hpricot.parse(xml)/:error
       if parse != []
-        RAILS_DEFAULT_LOGGER.info "#{xml}"
+        AwesomeUSPS.logger.info "#{xml}"
         return (Hpricot.parse(xml)/:description).inner_html
       else
         label = Hpricot.parse(xml)/:emlabel
@@ -102,11 +102,11 @@ module AwesomeUSPS
           retries -= 1
           retry
         else
-          RAILS_DEFAULT_LOGGER.warn "The connection to the remote server timed out"
+          AwesomeUSPS.logger.warn "The connection to the remote server timed out"
           return "We appoligize for the inconvience but our USPS service is busy at the moment. To retry please refresh the browser"
         end
       rescue SocketError
-        RAILS_DEFAULT_LOGGER.error "There is a socket error with USPS plugin"
+        AwesomeUSPS.logger.error "There is a socket error with USPS plugin"
         return "We appoligize for the inconvience but there is a problem with our server. To retry please refresh the browser"
       end
 
@@ -115,7 +115,7 @@ module AwesomeUSPS
       when Net::HTTPSuccess
         parse_express_mail_label(response.body, image_type)
       else
-        RAILS_DEFAULT_LOGGER.warn("USPS plugin settings are wrong #{response}")
+        AwesomeUSPS.logger.warn("USPS plugin settings are wrong #{response}")
         return "USPS plugin settings are wrong #{response}"
       end
     end

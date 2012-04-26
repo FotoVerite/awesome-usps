@@ -29,7 +29,7 @@ module  AwesomeUSPS
       request= international_mail_labels_xml(request_api, sender, receiver, items, content_type, image_type, po_box_flag, image_layout, label_type, options)
       gateway_commit(:express_mail_certify, 'ExpressMailIntlCertify', request, :ssl, image_type)
     end
-    
+
     def priority_mail_international_label(sender, receiver, items, content_type, image_type, po_box_flag ="N",
       image_layout="ALLINONEFILE", label_type="1", request_api = "PriorityMailIntlRequest", options={})
       Array(items) if not items.is_a? Array
@@ -220,7 +220,7 @@ module  AwesomeUSPS
       image_type = image_mime(image_type)
       parse = Hpricot.parse(xml)/:error
       if parse != []
-        RAILS_DEFAULT_LOGGER.info "#{xml}"
+        AwesomeUSPS.logger.info "#{xml}"
         return parse.inner_html
       end
       parse = Hpricot.parse(xml).search("#{response.downcase}")
