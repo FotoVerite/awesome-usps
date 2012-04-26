@@ -1,4 +1,4 @@
-module FotoVerite
+module AwesomeUSPS
   module Gateway
 
     MAX_RETRIES = 3
@@ -69,11 +69,11 @@ module FotoVerite
           retries -= 1
           retry
         else
-          RAILS_DEFAULT_LOGGER.warn "The connection to the remote server timed out"
+          AwesomeUSPS.logger.warn "The connection to the remote server timed out"
           return "We appoligize for the inconvience but our USPS service is busy at the moment. To retry please refresh the browser"
         end
       rescue SocketError
-        RAILS_DEFAULT_LOGGER.error "There is a socket error with USPS plugin"
+        AwesomeUSPS.logger.error "There is a socket error with USPS plugin"
         return "We appoligize for the inconvience but there is a problem with our server. To retry please refresh the browser"
       end
       case response
@@ -103,7 +103,7 @@ module FotoVerite
           parse_tracking(response.body)
         end
       else
-        RAILS_DEFAULT_LOGGER.warn("USPS plugin settings are wrong #{response}")
+        AwesomeUSPS.logger.warn("USPS plugin settings are wrong #{response}")
         return "USPS plugin settings are wrong #{response}"
       end
     end

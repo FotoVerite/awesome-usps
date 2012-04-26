@@ -1,4 +1,4 @@
-module  FotoVerite
+module  AwesomeUSPS
   module DeliveryAndSignatureConfirmation
 
     def delivery_confirmation_label(origin, destination, service_type, image_type, label_type=1, api_request = "DeliveryConfirmationV3.0Request", options={})
@@ -84,7 +84,7 @@ module  FotoVerite
       end
       parse = Hpricot.parse(xml)/:error
       if parse != []
-        RAILS_DEFAULT_LOGGER.info "#{xml}"
+        AwesomeUSPS.logger.info "#{xml}"
         return (Hpricot.parse(xml)/:description).inner_html
       elsif action == :signature_confirmation_certify || :signature
         number = Hpricot.parse(xml)/:signatureconfirmationnumber

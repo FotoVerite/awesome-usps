@@ -1,6 +1,6 @@
-module FotoVerite
+module AwesomeUSPS
   module Tracking
-    
+
     # Takes your package tracking number and returns information for the USPS web API
     def track(tracking_number)
       request = xml_for_tracking(tracking_number)
@@ -28,7 +28,7 @@ module FotoVerite
       event_list = []
       parse = Hpricot.parse(xml)/:trackdetail
       if parse == []
-        RAILS_DEFAULT_LOGGER.info "#{xml}"
+        AwesomeUSPS.logger.info "#{xml}"
         return (Hpricot.parse(xml)/:description).inner_html
       else
         parse.each do |detail|

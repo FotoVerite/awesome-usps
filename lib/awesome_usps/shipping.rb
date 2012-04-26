@@ -1,4 +1,4 @@
-module FotoVerite
+module AwesomeUSPS
   module Shipping
 
     MAX_RETRIES = 3
@@ -169,7 +169,7 @@ module FotoVerite
         #This will return the first error description found in response xml.
         #TODO find way to return all errors.
         if package.search("error") != []
-          RAILS_DEFAULT_LOGGER.info("package number #{i} has the error #{package.search("description").inner_html} please fix before continuing")
+          AwesomeUSPS.logger.info("package number #{i} has the error #{package.search("description").inner_html} please fix before continuing")
 
           return "package number #{i} has the error #{package.search("description").inner_html} please fix before continuing"
         end
@@ -197,7 +197,7 @@ module FotoVerite
         #This will return the first error description found in response xml.
         #TODO find way to return all errors.
         if package.search("error") != []
-          RAILS_DEFAULT_LOGGER.info("package number #{i} has the error #{package.search("description").inner_html} please fix before continuing")
+          AwesomeUSPS.logger.info("package number #{i} has the error #{package.search("description").inner_html} please fix before continuing")
 
           return "package number #{i} has the error #{package.search("description").inner_html} please fix before continuing"
         end

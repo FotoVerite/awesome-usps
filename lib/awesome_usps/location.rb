@@ -1,4 +1,4 @@
-module FotoVerite #:nodoc:
+module AwesomeUSPS #:nodoc:
   class Location
 
     attr_reader :options,
@@ -44,8 +44,16 @@ module FotoVerite #:nodoc:
       @from_urbanization =options[:from_urbanization]
     end
 
+    def zip9
+      if zip4.blank?
+        zip5
+      else
+        "#{zip5}-#{zip4}"
+      end
+    end
+
     def self.from(object, options={})
-      return object if object.is_a? FotoVerite::Location
+      return object if object.is_a? AwesomeUSPS::Location
       attr_mappings = {
         :name => [:name, :first_name],
         #:country => [:country_code, :country],

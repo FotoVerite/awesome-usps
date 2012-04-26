@@ -1,24 +1,27 @@
-module FotoVerite
+require 'hpricot'
+
+module AwesomeUSPS
   module AddressVerification
     MAX_RETRIES = 3
 
     LIVE_DOMAIN = 'production.shippingapis.com'
     LIVE_RESOURCE = '/ShippingAPI.dll'
 
-    TEST_DOMAIN ='testing.shippingapis.com'
+    TEST_DOMAIN = 'testing.shippingapis.com'
     TEST_RESOURCE = '/ShippingAPITest.dll'
 
-    API_CODES ={
+    API_CODES = {
       :verify_address => 'Verify',
       :zip_lookup => 'ZipCodeLookup',
-    :city_state_lookup =>"CityStateLookup"}
+      :city_state_lookup => 'CityStateLookup'
+    }
 
     # Examines address and fills in missing information. Address must include city & state or the zip to be processed.
     # Can do up to an array of five
-    def veryify_address(locations)
+    def verify_address(locations)
       locations = Array(locations) if not locations.is_a? Array
       api_request = "AddressValidateRequest"
-      request = xml_for_verify_address(api_request, locations)
+      request = xml_for_address_information_api(api_request, locations)
       gateway_commit(:verify_address, 'Verify', request, :live)
     end
 
@@ -35,7 +38,6 @@ module FotoVerite
       request = xml_for_address_information_api(api_request, locations)
       gateway_commit(:zip_lookup, 'CityStateLookup', request, :live)
     end
-
 
     def canned_verify_address_test
       locations = [Location.new(:address2 => "6406 Ivy Lane", :city =>"Greenbelt", :state => "MD"), Location.new(:address2=>"8 Wildwood Drive", :city => "Old Lyme",:state => "CT", :zip5 => "06371"   )]
@@ -91,7 +93,7 @@ module FotoVerite
         h = {}
         #Check if there was an error in an address element
         if address.search("error") != []
-          RAILS_DEFAULT_LOGGER.info("Address number #{i} has the error '#{address.search("description").inner_html}' please fix before continuing")
+          AwesomeUSPS.logger.info("Address number #{i} has the error '#{address.search("description").inner_html}' please fix before continuing")
 
           return "Address number #{i} has the error '#{address.search("description").inner_html}' please fix before continuing"
         end
@@ -105,11 +107,10 @@ module FotoVerite
       end
       #Check if there was an error in the basic XML formating
       if list_of_verified_addresses == []
-        error =Hpricot.parse(xml)/:error
+        error = Hpricot.parse(xml)/:error
         return  error.search("description").inner_html
       end
       return list_of_verified_addresses
     end
-
   end
 end
