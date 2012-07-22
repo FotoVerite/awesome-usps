@@ -1,0 +1,2 @@
+# To run tests, copy this file to settings.rb and include your USPS username here
+USPS_USERNAME = ''
