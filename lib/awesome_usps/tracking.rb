@@ -16,26 +16,25 @@ module AwesomeUsps
     # XML from a straight string.
     # "<TrackFieldRequest USERID='#{@username}'><TrackID ID='#{@tracking_number}'></TrackID></TrackFieldRequest>"
     def xml_for_tracking(tracking_number)
-      xm = Builder::XmlMarkup.new
-      xm.TrackFieldRequest("USERID" =>"#{@username}") do
-        xm.TrackID("ID"=> "#{tracking_number}")
+      builder = Nokogiri::XML::Builder.new do |xm|
+        xm.TrackFieldRequest("USERID" =>"#{@username}") do
+          xm.TrackID("ID"=> "#{tracking_number}")
+        end
       end
+      builder.doc.root.to_xml
     end
 
     # Parses the XML into an array broken up by each event.
     # Example of returned array
     def parse_tracking(xml)
+      doc = Nokogiri::XML(xml)
       event_list = []
-      parse = Hpricot.parse(xml)/:trackdetail
-      if parse == []
-        Rails.logger.info "#{xml}"
-        return (Hpricot.parse(xml)/:description).inner_html
-      else
-        parse.each do |detail|
-          h = {}
-          detail.children.each { |elem| h[elem.name.to_sym] = elem.inner_text unless elem.inner_text.blank? }
-          event_list << h
-        end
+      parse = doc.xpath('//TrackDetail')
+      raise(USPSResponseError, doc.search('Description').inner_html) if parse.empty?
+      parse.each do |detail|
+        h = {}
+        detail.children.each { |elem| h[elem.name.to_sym] = elem.inner_text unless elem.inner_text.empty? }
+        event_list << h
       end
       event_list
     end

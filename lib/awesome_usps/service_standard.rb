@@ -22,11 +22,11 @@ module AwesomeUsps
     end
 
     def canned_standard_mail_estimated_time_test
-      origin =  Location.new(  :zip5 => '4')
-      destination = Location.new( :zip5 => '4')
+      origin =  Location.new(:zip5 => '4')
+      destination = Location.new(:zip5 => '4')
       api_request="StandardBRequest"
       request = xml_for_estimated_time_for_delivery(api_request, origin, destination)
-      gateway_commit(:priority_mail, 'PriorityMail', request,  :test)
+      gateway_commit(:priority_mail, 'StandardB', request,  :test)
     end
 
     def canned_priority_mail_estimated_time_test
@@ -34,7 +34,7 @@ module AwesomeUsps
       destination = Location.new( :zip5 => '4')
       api_request="PriorityMailRequest"
       request = xml_for_estimated_time_for_delivery(api_request, origin, destination)
-      gateway_commit(:standard, 'StandardB',  request,  :test)
+      gateway_commit(:standard, 'PriorityMail',  request,  :test)
     end
 
     def canned_express_mail_commitment_test
@@ -48,45 +48,43 @@ module AwesomeUsps
 
     # XML from a straight string.
     def xml_for_estimated_time_for_delivery(api_request, origin, destination, date=nil)
-      xm = Builder::XmlMarkup.new
-      xm.tag!(api_request, "USERID"=>"#{@username}") do
-        xm.OriginZIP(origin.zip5)
-        xm.DestinationZIP(destination.zip5)
-        if api_request == 'ExpressMailCommitmentRequest'
-          xm.Date(date)
+       builder = Nokogiri::XML::Builder.new do |xm|
+        xm.send("#{api_request}", "USERID"=>"#{@username}") do
+          #BECAUSE USPS IS SO FUCKING STUPID IT NEEDS DIFFERENT FUCKING TAGS FOR ORIGIN AND DESTINATION BASED ON API WHICH ARE EITHER CAPITALIZED AT THE END OR NOT. FUCKING A. 
+          if api_request == 'ExpressMailCommitmentRequest'
+            xm.OriginZIP(origin.zip5)
+            xm.DestinationZIP(destination.zip5)
+            xm.Date(date)
+          else
+            xm.OriginZip(origin.zip5)
+            xm.DestinationZip(destination.zip5)
+          end
         end
       end
+      builder.doc.root.to_xml
     end
 
     # Parses the XML into an array broken up by each event.
     # Example of returned array
     def parse_service(xml)
-      event_list = []
-      parse = Hpricot.parse(xml)/:error
-      if parse != []
-        Rails.logger.info "#{xml}"
-        return (Hpricot.parse(xml)/:description).inner_html
-      else
-        return  parse = (Hpricot.parse(xml)/:days).inner_html
-      end
+      doc = Nokogiri::XML(xml)
+      raise(USPSResponseError, doc.search('Description').inner_html) unless doc.xpath("Error").empty?
+      doc.search("Days").inner_html
     end
 
     def parse_express(xml)
-      parse = Hpricot.parse(xml)/:error
-      if parse != []
-        Rails.logger.info "#{xml}"
-        return (Hpricot.parse(xml)/:description).inner_html
-      else
-        i= 0
-        location_list = []
-        (Hpricot.parse(xml)/:location).each do |location|
-          i+=1
-          h = {}
-          location.children.each {|elem| h[elem.name.to_sym] = elem.inner_text unless elem.inner_text.blank?}
-          location_list << h
-        end
-        return   location_list
+      doc = Nokogiri::XML(xml)
+      raise(USPSResponseError, doc.search('Description').inner_html) unless doc.xpath("Error").empty?
+
+      i= 0
+      location_list = []
+      doc.search('Location').each do |location|
+        i+=1
+        h = {}
+        location.children.each {|elem| h[elem.name.to_sym] = elem.inner_text unless elem.inner_text.empty?}
+        location_list << h
       end
+      return location_list
     end
 
   end

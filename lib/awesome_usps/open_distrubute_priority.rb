@@ -21,54 +21,48 @@ module  AwesomeUsps
     end
 
     private
-    def open_distrubute_priority_xml(api_requst, origin, destination, package_weight_in_ounces,  mail_type, image_type, label_type, options)
-      xm = Builder::XmlMarkup.new
-      xm.tag!("#{api_requst}", "USERID"=>"#{@username}") do
-        xm.PermitNumber(options[:permit_number])
-        xm.PermitIssuingPOZip5(options[:permit_zip])
-        xm.FromName(origin.name)
-        xm.FromFirm(origin.firm_name)
-        xm.FromAddress1(origin.address1) #Used for an apartment or suite number. Yes the API is a bit fucked.
-        xm.FromAddress2(origin.address2)
-        xm.FromCity(origin.city)
-        xm.FromState(origin.state)
-        xm.FromZip5(origin.zip5)
-        xm.FromZip4(origin.zip4)
-        xm.POZipCode(options[:po_zip_code])
-        xm.ToFacilityName(destination.name)
-        xm.ToFacilityAddress1(destination.address1)
-        xm.ToFacilityAddress2(destination.address2)
-        xm.ToFacilityCity(destination.city)
-        xm.ToFacilityState(destination.state)
-        xm.ToFacilityZip5(destination.zip5)
-        xm.ToFacilityZip4(destination.zip4)
-        xm.FacilityType(destination.facility_type)
-        xm.MailClassEnclosed(mail_type)
-        xm.MailClassOther(options[:other])
-        xm.WeightInPounds("0")
-        xm.WeightInOunces(package_weight_in_ounces)
-        xm.ImageType(image_type)
-        xm.SeparateReceiptPage(options[:seperate])
-        xm.LabelDate(options[:label_date])
-        xm.AllowNonCleansedFacilityAddr("false")
+    def open_distrubute_priority_xml(api_request, origin, destination, package_weight_in_ounces,  mail_type, image_type, label_type, options)
+      builder = Nokogiri::XML::Builder.new do |xm|
+        xm.send("#{api_request}", "USERID"=>"#{@username}") do
+          xm.PermitNumber(options[:permit_number])
+          xm.PermitIssuingPOZip5(options[:permit_zip])
+          xm.FromName(origin.name)
+          xm.FromFirm(origin.firm_name)
+          xm.FromAddress1(origin.address1) #Used for an apartment or suite number. Yes the API is a bit fucked.
+          xm.FromAddress2(origin.address2)
+          xm.FromCity(origin.city)
+          xm.FromState(origin.state)
+          xm.FromZip5(origin.zip5)
+          xm.FromZip4(origin.zip4)
+          xm.POZipCode(options[:po_zip_code])
+          xm.ToFacilityName(destination.name)
+          xm.ToFacilityAddress1(destination.address1)
+          xm.ToFacilityAddress2(destination.address2)
+          xm.ToFacilityCity(destination.city)
+          xm.ToFacilityState(destination.state)
+          xm.ToFacilityZip5(destination.zip5)
+          xm.ToFacilityZip4(destination.zip4)
+          xm.FacilityType(destination.facility_type)
+          xm.MailClassEnclosed(mail_type)
+          xm.MailClassOther(options[:other])
+          xm.WeightInPounds("0")
+          xm.WeightInOunces(package_weight_in_ounces)
+          xm.ImageType(image_type)
+          xm.SeparateReceiptPage(options[:seperate])
+          xm.LabelDate(options[:label_date])
+          xm.AllowNonCleansedFacilityAddr("false")
+        end
       end
+      builder.doc.root.to_xml
     end
 
     def parse_open_distrubute_priority(xml, image_type)
-      if image_type == "TIF"
-        image_type = "image/tif"
-      else
-        image_type = "application/pdf"
-      end
-      parse = Hpricot.parse(xml)/:error
-      if parse != []
-        Rails.logger.info "#{xml}"
-        return (Hpricot.parse(xml)/:description).inner_html
-      else
-        number = Hpricot.parse(xml)/:opendistributeprioritynumber
-        label = Hpricot.parse(xml)/:opendistributeprioritylabel
-        return {:image_type => image_type, :number => number.inner_html, :label => label.inner_html}
-      end
+      doc = Nokogiri::XML(xml)
+      mime_type = image_mime_type image_type
+      raise(USPSResponseError, doc.search('Description').inner_html) unless doc.xpath("Error").empty?
+      number = doc.search("OpenDistributePriorityNumber")
+      label = doc.search("OpenDistributePriorityLabel")
+      return {:image_type => mime_type, :number => number.inner_html, :label => label.inner_html}
     end
 
   end

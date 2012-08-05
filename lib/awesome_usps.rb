@@ -1,4 +1,4 @@
-require 'hpricot'
+require 'nokogiri'
 require 'net/https'
 require 'awesome_usps/package'
 require 'awesome_usps/location'
@@ -13,6 +13,9 @@ require 'awesome_usps/express_mail'
 require 'awesome_usps/address_verification'
 require 'awesome_usps/international_mail_labels'
 require 'awesome_usps/gateway'
+require 'awesome_usps/canned_tests'
+require 'awesome_usps/awesome_usps_errors'
+
 include AwesomeUsps
 
 module AwesomeUsps
@@ -31,5 +34,16 @@ module AwesomeUsps
     include AddressVerification
     include InternationalMailLabels
     include Gateway
+    include CannedTests
+
+
+    def image_mime_type(image_type)
+        if image_type == "PDF"
+            image_type = "application/pdf"
+        else
+            image_type = "image/#{image_type.downcase}"
+        end
+    end
+
   end
 end

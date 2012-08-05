@@ -29,9 +29,9 @@ module AwesomeUsps #:nodoc:
 
     def prettyprint
       chunks = []
-      chunks << [@description,@quantity,@value, @tariff_number, @country].reject {|e| e.blank?}.join("\n")
-      chunks << [@pounds,@ounces].reject {|e| e.blank?}.join(', ')
-      chunks.reject {|e| e.blank?}.join("\n")
+      chunks << [@description,@quantity,@value, @tariff_number, @country].reject {|e| e.to_s.empty?}.join("\n")
+      chunks << [@pounds,@ounces].reject {|e| e.to_s.empty?}.join(', ')
+      chunks.reject {|e| e.to_s.empty?}.join("\n")
     end
 
     def inspect

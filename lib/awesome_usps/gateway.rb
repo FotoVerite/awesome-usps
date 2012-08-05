@@ -69,12 +69,8 @@ module AwesomeUsps
           retries -= 1
           retry
         else
-          RAILS_DEFAULT_LOGGER.warn "The connection to the remote server timed out"
-          return "We appoligize for the inconvience but our USPS service is busy at the moment. To retry please refresh the browser"
+          raise USPSTimoutError, "The connection to USPS API timed out"
         end
-      rescue SocketError
-        RAILS_DEFAULT_LOGGER.error "There is a socket error with USPS plugin"
-        return "We appoligize for the inconvience but there is a problem with our server. To retry please refresh the browser"
       end
       case response
       when Net::HTTPSuccess, Net::HTTPRedirection
@@ -103,8 +99,7 @@ module AwesomeUsps
           parse_tracking(response.body)
         end
       else
-        RAILS_DEFAULT_LOGGER.warn("USPS plugin settings are wrong #{response}")
-        return "USPS plugin settings are wrong #{response}"
+        raise USPSResponseError, "USPS response was not a success. #{response}"
       end
     end
 
