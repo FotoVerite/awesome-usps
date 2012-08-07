@@ -1,3 +1,4 @@
+require 'rubygems'
 require 'nokogiri'
 require 'net/https'
 require 'awesome_usps/package'
@@ -15,8 +16,6 @@ require 'awesome_usps/international_mail_labels'
 require 'awesome_usps/gateway'
 require 'awesome_usps/canned_tests'
 require 'awesome_usps/awesome_usps_errors'
-
-include AwesomeUsps
 
 module AwesomeUsps
   class USPS
