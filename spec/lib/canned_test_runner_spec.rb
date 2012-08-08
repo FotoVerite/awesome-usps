@@ -15,15 +15,15 @@ describe AwesomeUsps do
   end
 
   it "Verify that an address is accurate" do
-    USPS.canned_verify_address_test.should == [{:Address2=>"6406 IVY LN", :City=>"GREENBELT", :State=>"MD", :Zip5=>"20770", :Zip4=>"1440"}, {:Address2=>"8 WILDWOOD DR", :City=>"OLD LYME", :State=>"CT", :Zip5=>"06371", :Zip4=>"1844"}]
+    USPS.canned_verify_address_test.should == [{:address2=>"6406 IVY LN", :city=>"GREENBELT", :state=>"MD", :zip5=>"20770", :zip4=>"1440"}, {:address2=>"8 WILDWOOD DR", :city=>"OLD LYME", :state=>"CT", :zip5=>"06371", :zip4=>"1844"}]
   end
 
   it "Finds an address by zipcode" do
-    USPS.canned_zip_lookup_test.should == [{:Address2=>"6406 IVY LN", :City=>"GREENBELT", :State=>"MD", :Zip5=>"20770", :Zip4=>"1440"}, {:Address2=>"8 WILDWOOD DR", :City=>"OLD LYME", :State=>"CT", :Zip5=>"06371", :Zip4=>"1844"}]
+    USPS.canned_zip_lookup_test.should == [{:address2=>"6406 IVY LN", :city=>"GREENBELT", :state=>"MD", :zip5=>"20770", :zip4=>"1440"}, {:address2=>"8 WILDWOOD DR", :city=>"OLD LYME", :state=>"CT", :zip5=>"06371", :zip4=>"1844"}]
   end 
 
   it "Finds an address by city state" do
-    USPS.canned_city_state_lookup_test.should == [{:Zip5=>"90210", :City=>"BEVERLY HILLS", :State=>"CA"}, {:Zip5=>"20770", :City=>"GREENBELT", :State=>"MD"}]
+    USPS.canned_city_state_lookup_test.should == [{:zip5=>"90210", :city=>"BEVERLY HILLS", :state=>"CA"}, {:zip5=>"20770", :city=>"GREENBELT", :state=>"MD"}]
   end 
 
   it "should return a delivery label" do
