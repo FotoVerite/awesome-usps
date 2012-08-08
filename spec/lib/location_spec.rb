@@ -39,9 +39,5 @@ module AwesomeUsps
       expect(@location.first_name).to eq(@location.name)
     end
 
-    it "" do
-
-    end
-
   end
 end
