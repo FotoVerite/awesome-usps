@@ -1,3 +1,4 @@
+require 'rubygems'
 require 'nokogiri'
 require 'net/https'
 require 'awesome_usps/package'
@@ -15,8 +16,7 @@ require 'awesome_usps/international_mail_labels'
 require 'awesome_usps/gateway'
 require 'awesome_usps/canned_tests'
 require 'awesome_usps/awesome_usps_errors'
-
-include AwesomeUsps
+require 'awesome_usps/precise_round'
 
 module AwesomeUsps
   class USPS
@@ -36,7 +36,6 @@ module AwesomeUsps
     include Gateway
     include CannedTests
 
-
     def image_mime_type(image_type)
         if image_type == "PDF"
             image_type = "application/pdf"
@@ -46,4 +45,5 @@ module AwesomeUsps
     end
 
   end
+
 end

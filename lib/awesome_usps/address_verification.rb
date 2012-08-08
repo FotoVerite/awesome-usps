@@ -60,7 +60,7 @@ module AwesomeUsps
       doc.xpath("//Address|//ZipCode").each_with_index do |address, i|
         h = {}
         raise(USPSResponseError,"Address number #{i} has the error '#{address.search("Description").inner_html}' please fix before continuing") unless doc.search("Error").empty?
-        address.children.each { |elem| h[elem.name.to_sym] = elem.inner_text unless elem.inner_text.empty? }
+        address.children.each { |elem| h[elem.name.downcase.to_sym] = elem.inner_text unless elem.inner_text.empty? }
         list_of_verified_addresses << h
       end
       #Check if there was an error in the basic XML formating
