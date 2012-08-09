@@ -90,7 +90,7 @@ Object Methods are as follow
 
 # Sample Usage
 	#In your environment.rb or production.rb
-    include FotoVerite
+    include AwesomeUsps
 
 	# Then to access the plugin you much create an instance of USPS class
 	 usps = USPS.new('Your user name')
