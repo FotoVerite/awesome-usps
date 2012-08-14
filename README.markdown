@@ -17,15 +17,15 @@ This library is meant to interface with the web services of USPS. It grew out of
 
 Currently this library is available on GitHub:
 
-  <http://github.com/AwesomeUsps/awesome_usps>
+  <http://github.com/FotoVerite/awesome_usps>
 
 You will need to get [Git][] if you don't have it. Then:
 
-  > script/plugin install  git://github.com/AwesomeUsps/awesome_usps.git
+  > script/plugin install  git://github.com/FotoVerite/awesome_usps.git
 
  if using rails prior to 2.1:
 
-  > git clone git://github.com/AwesomeUsps/awesome_usps.git
+  > git clone git://github.com/FotoVerite/awesome_usps.git
 
 (That URL is case-sensitive, so watch out.)
   
@@ -366,7 +366,7 @@ Object Methods are as follow
 
 Yes, please! I am a young Ruby Developer who is making plenty mistakes. Any improvements to the coding structure or patches would be highly appreciated. 
 
-The nicest way to submit changes would be to set up a GitHub account and fork this project, then initiate a pull request when you want your changes looked at. You can also make a patch (preferably with [git-diff][]) and email to AwesomeUsps@gmail.com
+The nicest way to submit changes would be to set up a GitHub account and fork this project, then initiate a pull request when you want your changes looked at. You can also make a patch (preferably with [git-diff][]) and email to FotoVerite@gmail.com
 
 [git-diff]:http://www.kernel.org/pub/software/scm/git/docs/git-diff.html
 
