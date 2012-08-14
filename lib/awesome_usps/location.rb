@@ -77,20 +77,19 @@ module AwesomeUsps #:nodoc:
 
 
     def to_s
-      prettyprint.gsub(/\n/, ' ')
+      prettyprint.gsub(/\n/, ', ')
     end
 
     def prettyprint
       chunks = []
-      chunks << [@name,@firm_name].reject {|e| e.blank?}.join("\n")
-      chunks << [@address1,@address2].reject {|e| e.blank?}.join("\n")
-      chunks << [@city,@state,@zip5].reject {|e| e.blank?}.join(', ')
-      chunks.reject {|e| e.blank?}.join("\n")
+      chunks << [@name,@firm_name].reject {|e| e.nil?}.join("\n")
+      chunks << [@address1,@address2].reject {|e| e.nil?}.join("\n")
+      chunks << [@city,@state,@zip5].reject {|e| e.nil?}.join(', ')
+      chunks.reject {|e| e.nil?}.join("\n")
     end
 
     def inspect
-      string = prettyprint
-      string
+      prettyprint
     end
   end
 

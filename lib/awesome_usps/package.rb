@@ -44,9 +44,9 @@ module AwesomeUsps #:nodoc:
     def ounces(options={})
       case options[:type]
       when *[nil,:actual]
-       @ounces ||= grams(options) * OUNCES_IN_A_GRAM
+       @ounces ||= (grams(options) * OUNCES_IN_A_GRAM).precise_round(1)
       when *[:volumetric,:dimensional]
-       @volumetric_ounces ||= grams(options) * OUNCES_IN_A_GRAM
+       @volumetric_ounces ||= (grams(options) * OUNCES_IN_A_GRAM).precise_round(1)
       when :billable
         @billable_ounces ||= [ounces,ounces(:type => :volumetric)].max
       end
@@ -56,9 +56,9 @@ module AwesomeUsps #:nodoc:
     def grams(options={})
       case options[:type]
       when *[nil,:actual]
-       @grams ||= ounces(options) * GRAMS_IN_AN_OUNCE
+       @grams ||= (ounces(options) * GRAMS_IN_AN_OUNCE).precise_round(3)
       when *[:volumetric,:dimensional]
-       @volumetric_grams ||= centimetres(:box_volume) / 6.0
+       @volumetric_grams ||= (centimetres(:box_volume) / 6.0).precise_round(0)
       when :billable
        [grams,grams(:type => :volumetric)].max
       end
@@ -66,26 +66,26 @@ module AwesomeUsps #:nodoc:
     alias_method :g, :grams
 
     def pounds(options={})
-      ounces(options) / 16.0
+      (ounces(options) / 16.0).precise_round(1)
     end
     alias_method :lb, :pounds
     alias_method :lbs, :pounds
 
     def kilograms(options={})
-      grams(options) / 1000.0
+      (grams(options) / 1000.0).precise_round(3)
     end
     alias_method :kg, :kilograms
     alias_method :kgs, :kilograms
 
     def inches(measurement=nil)
-      @inches ||= @centimetres.map {|cm| cm * INCHES_IN_A_CM}
-      measurement.nil? ? @inches : measure(measurement, @inches)
+      @inches ||= @centimetres.map {|cm| (cm * INCHES_IN_A_CM).precise_round(1) }
+      measurement.nil? ? @inches : (measure(measurement, @inches).to_f).precise_round(1)
     end
     alias_method :in, :inches
 
     def centimetres(measurement=nil)
-      @centimetres ||= @inches.map {|inches| inches * CM_IN_AN_INCH}
-      measurement.nil? ? @centimetres : measure(measurement, @centimetres)
+      @centimetres ||= @inches.map {|inches| (inches * CM_IN_AN_INCH).precise_round(2) }
+      measurement.nil? ? @centimetres : (measure(measurement, @centimetres).to_f).precise_round(2)
     end
     alias_method :cm, :centimetres
 
