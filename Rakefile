@@ -1,15 +1,13 @@
 require 'rake'
 require 'rake/testtask'
-require 'rake/rdoctask'
+require 'rdoc/task'
+require 'rspec/core/rake_task'
 
-desc 'Default: run unit tests.'
-task :default => :test
+desc 'Default: run specs'
+task :default => :spec
 
-desc 'Test the usps plugin.'
-Rake::TestTask.new(:test) do |t|
-  t.libs << 'lib'
-  t.pattern = 'test/**/*_test.rb'
-  t.verbose = true
+RSpec::Core::RakeTask.new do |t|
+  t.pattern = "spec/**/*_spec.rb"
 end
 
 desc 'Generate documentation for the usps plugin.'
